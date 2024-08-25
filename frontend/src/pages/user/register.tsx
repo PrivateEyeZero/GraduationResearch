@@ -5,7 +5,7 @@ import { Box, Button, Input, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const url = BACKEND_URL + "/auth/register"; 
+const url = BACKEND_URL + "/auth/register";
 
 export default function Register() {
   const [id, setId] = useState("");
@@ -25,7 +25,7 @@ export default function Register() {
       });
       console.log(response);
       const data = await response.json();
-      console.log(data); 
+      console.log(data);
       if (data.result === "success") {
         router.push("/user/login");
       } else {

@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
 
-export default class Session{
+export default class Session {
   static sessions_data = new Map<string, string>();
 
   static createSession(id: string): string {
     const session_id = uuidv4();
-    this.sessions_data.set(id,session_id);
+    this.sessions_data.set(id, session_id);
     return session_id;
   }
 
@@ -14,7 +14,7 @@ export default class Session{
   }
 
   static checkSessionId(id: string, session_id: string): boolean {
-    if(!this.sessions_data.has(id))return false;
+    if (!this.sessions_data.has(id)) return false;
     return this.sessions_data.get(id) === session_id;
   }
 }

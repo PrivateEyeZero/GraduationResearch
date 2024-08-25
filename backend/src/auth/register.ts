@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { sql_util } from "../system/mysql/sql_util";
-import {sql} from "../server";
+import { sql } from "../server";
 import Session from "../system/session";
 
 const BASIC_INFO = require("../basic_info.ts");
@@ -11,18 +11,19 @@ export const register = (req: Request, res: Response) => {
   const pass2 = req.body.pass2 as string;
   if (pass !== pass2) {
     res.send(
-      BASIC_INFO.FAILED_MSG("message", "パスワードが確認用と一致しません")
+      BASIC_INFO.FAILED_MSG("message", "パスワードが確認用と一致しません"),
     );
     return;
   }
 
   sql_util
-    .addUser(sql.getConnection(),id, pass)
+    .addUser(sql.getConnection(), id, pass)
     .then((result) => {
-      if(result.result === "success")result.session_id= Session.createSession(id);  
+      if (result.result === "success")
+        result.session_id = Session.createSession(id);
       res.send(result);
     })
     .catch((error) => {
-      res.send(BASIC_INFO.FAILED_MSG("mesage",error));
+      res.send(BASIC_INFO.FAILED_MSG("mesage", error));
     });
 };
