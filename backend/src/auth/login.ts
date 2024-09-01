@@ -16,7 +16,7 @@ export const login = (req: Request, res: Response) => {
     .authUser(sql.getConnection(), id, pass)
     .then((result) => {
       if (result.result === "success")
-        result.session_id = Session.createSession(id);
+        result.session_id = Session.createSession(result.uuid.toString());
       res.send(result);
     })
     .catch((error) => {

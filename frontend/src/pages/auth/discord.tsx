@@ -3,6 +3,8 @@
 "use client";  // クライアントコンポーネントであることを明示
 
 import { Box, Button, VStack, Text } from "@chakra-ui/react";
+import {Session} from "../../_util/session";
+
 export default function DiscordAuth() {
   const handleLogin = async () => {
     fetch('http://localhost:8080/auth/discord', {
@@ -10,7 +12,7 @@ export default function DiscordAuth() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ session_id: "test27" }),
+      body: JSON.stringify({ session_id: Session.getSessionId() }),
     })
     .then(response => response.json())
     .then(data => {

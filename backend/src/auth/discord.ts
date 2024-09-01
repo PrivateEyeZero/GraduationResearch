@@ -1,6 +1,9 @@
 require("dotenv").config();
 import { Request, Response } from "express";
+import { sql_util } from "../system/mysql/sql_util";
+import { sql } from "../server";
 import Session from "../system/session";
+import axios from "axios";
 
 const BASIC_INFO = require("../basic_info.ts");
 
@@ -8,8 +11,9 @@ const REDIRECT_URL = BASIC_INFO.SERVER_URL + "/auth/discord/callback";
 
 export const discord = (req: Request, res: Response) => {
   const session_id = req.body.session_id //req.body.session_id as string;
-  const user_id = "silv"//Session.getSessionUser(session_id);
-  if(user_id === null) {
+  console.log(session_id)
+  const uuid = Session.getSessionUser(session_id);
+  if(uuid === null) {
     const failed_msg = BASIC_INFO.FAILED_MSG("session_id", "Invalid session_id");
     failed_msg.detail="session_error"
     res.send(failed_msg);
@@ -21,15 +25,53 @@ export const discord = (req: Request, res: Response) => {
   res.json({ redirectUrl: discordAuthUrl });
 }
 
-export const discord_callback = (req: Request, res: Response) => {
+export const discord_callback = async (req: Request, res: Response) => {
   const { code, state } = req.query;
-
-  // コードを使ってアクセストークンを取得する処理（省略）
+  const session_id = state as string;
+  const uuid = Session.getSessionUser(session_id);
+  console.log("uuid", Session.getSessionUser(session_id));
+  if(uuid === null) {
+    const failed_msg = BASIC_INFO.FAILED_MSG("session_id", "Invalid session_id");
+    failed_msg.detail="session_error"
+    res.send(failed_msg);
+    return;
+  }
 
   // ランダムな文字列とともに処理を行う
   console.log('Received state:', state);
   console.log('Authorization code:', code);
+  try {
+    // Discordからアクセストークンを取得
+    const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
+      client_id: process.env.DISCORD_CLIENT_ID!,
+      client_secret: process.env.DISCORD_CLIENT_SECRET!,
+      grant_type: 'authorization_code',
+      code: code as string,
+      redirect_uri: REDIRECT_URL,
+      scope: 'identify'
+    }).toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
 
+    const accessToken = tokenResponse.data.access_token;
+
+    // アクセストークンを使ってユーザー情報を取得
+    const userResponse = await axios.get('https://discord.com/api/v10/users/@me', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+
+    const userId = userResponse.data;
+
+    const con = sql.getConnection();
+  
+    await sql_util.updateIntegration(con, uuid, userId.id);
+  } catch (error) {
+    console.error('Error:', error);
+  }
   // 処理が終わったらクライアントにリダイレクトするURLを返す
-  res.redirect('http://localhost:3000/debug');
+  res.redirect(BASIC_INFO.LOCAL_AUTH_URL);
 }

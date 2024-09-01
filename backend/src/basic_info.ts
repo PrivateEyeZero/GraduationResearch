@@ -2,11 +2,14 @@ const PORT = "8080";
 const SERVER_URL = "http://localhost:" + PORT;
 const ENV_PATH = "data/.env";
 
+const LOCAL_AUTH_URL = "http://localhost:3000/debug";
 //Discord-Auth
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_AUTH_REDIRECT_URI =
   "http://localhost:" + PORT + "/auth/discord/callback";
+
+
 
 //Response
 export type RESPONSE_MSG_TYPE = { [key: string]: RESPONSE_MSG_TYPE | string };
@@ -26,6 +29,8 @@ module.exports = {
   PORT,
   SERVER_URL,
   ENV_PATH,
+  //Auth
+  LOCAL_AUTH_URL,
   //Discord-Auth
   DISCORD_CLIENT_ID,
   DISCORD_CLIENT_SECRET,
