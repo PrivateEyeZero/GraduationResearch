@@ -1,16 +1,15 @@
 "use client";
 
 import { BACKEND_URL } from "@/basic_info";
-import { useMyContext } from "@/contexts/MyContext";
 import { Box, Button, Input, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {Session} from "../../_util/session";
 
 const url = BACKEND_URL + "/auth/login"; // Replace with your target URL
 export default function Login() {
   const [id, setId] = useState("");
   const [pass, setPass] = useState("");
-  const { sessionId, setSessionId } = useMyContext();
   const router = useRouter();
 
   const handleSubmit = async () => {
@@ -26,7 +25,8 @@ export default function Login() {
       const data = await response.json();
       console.log(data); // Handle the response data as needed
       if (data.result === "success") {
-        setSessionId(data.session_id);
+        Session.setSessionId(data.session_id);
+        console.log("test")
         router.push("/debug");
       }
     } catch (error) {
@@ -37,7 +37,7 @@ export default function Login() {
   return (
     <Box p={4}>
       <VStack spacing={4}>
-        <Box>Session: {sessionId}</Box>
+        <Box>Session:</Box>
         <Box>
           ID:
           <Input

@@ -1,4 +1,5 @@
 const PORT = "8080";
+const SERVER_URL = "http://localhost:" + PORT;
 const ENV_PATH = "data/.env";
 
 //Discord-Auth
@@ -13,16 +14,17 @@ const SUCCESS_MSG = (
   key: string | null = null,
   value: string | null = null,
 ): { [obj_key: string]: string } =>
-  value === null ? { result: "success" } : { result: "success", key: value };
+  value === null ? { result: "success" } : { result: "success", [`${key}`]: value };
 const FAILED_MSG = (
   key: string | null = null,
   value: string | null = null,
 ): { [obj_key: string]: string } =>
-  value === null ? { result: "failed" } : { result: "failed", key: value };
+  value === null ? { result: "failed" } : { result: "failed", [`${key}`]: value };
 
 module.exports = {
   //System
   PORT,
+  SERVER_URL,
   ENV_PATH,
   //Discord-Auth
   DISCORD_CLIENT_ID,

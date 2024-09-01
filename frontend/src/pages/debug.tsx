@@ -1,9 +1,7 @@
 "use client";
 
 import { Box } from "@chakra-ui/react";
-import { useMyContext } from "@/contexts/MyContext";
-
+import {Session} from "../_util/session";
 export default function Debug() {
-  const { sessionId, setSessionId } = useMyContext();
-  return <Box>このページはデバッグ用のページです。: {sessionId}</Box>;
+  return <Box>このページはデバッグ用のページです。: {Session.getSessionId()}</Box>;
 }

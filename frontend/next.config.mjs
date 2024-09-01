@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: './data/.env' });
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
