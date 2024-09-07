@@ -18,7 +18,7 @@ export default function Debug() {
       borderColor="red.500"
     >
       <Text fontSize="xl" color="red.500" mb={4}>
-      このページはデバッグ用のページです。
+        このページはデバッグ用のページです。
       </Text>
       <Button colorScheme="red" onClick={handleRedirect}>
         情報ページへ
