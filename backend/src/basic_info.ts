@@ -23,6 +23,7 @@ const FAILED_MSG = (
   value: string | null = null,
 ): { [obj_key: string]: string } =>
   value === null ? { result: "failed" } : { result: "failed", [`${key}`]: value };
+const INVALID_SESSION_MSG = "invalid-session";
 
 module.exports = {
   //System
@@ -38,4 +39,5 @@ module.exports = {
   //Response
   SUCCESS_MSG,
   FAILED_MSG,
+  INVALID_SESSION_MSG
 };

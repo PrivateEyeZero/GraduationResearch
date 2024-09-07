@@ -1,11 +1,12 @@
-"use client";
-
-import { Box, Text, Button } from "@chakra-ui/react";
+import React from "react";
+import { Box, Button, Text } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-export default function Debug() {
+
+const InvalidSession: React.FC = () => {
   const router = useRouter();
+
   const handleRedirect = () => {
-    router.push("/auth/info");
+    router.push("/auth/login");
   };
 
   return (
@@ -18,11 +19,13 @@ export default function Debug() {
       borderColor="red.500"
     >
       <Text fontSize="xl" color="red.500" mb={4}>
-      このページはデバッグ用のページです。
+        セッションが無効です。再度ログインしてください。
       </Text>
       <Button colorScheme="red" onClick={handleRedirect}>
-        情報ページへ
+        ログインページへ
       </Button>
     </Box>
   );
-}
+};
+
+export default InvalidSession;

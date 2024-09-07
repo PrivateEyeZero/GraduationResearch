@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
 import { sql_util } from "../system/mysql/sql_util";
 import { sql } from "../server";
 import Session from "../system/session";

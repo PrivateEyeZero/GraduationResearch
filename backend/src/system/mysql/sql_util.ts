@@ -82,6 +82,33 @@ export class sql_util {
     });
   }
 
+  static async getUser(
+    con: mysql.Connection,
+    uuid: number
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `SELECT id FROM user WHERE uuid = ?`;
+
+    return new Promise((resolve, reject) => {
+      con.query(query, [uuid], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          const rows = results as mysql.RowDataPacket[];
+          if (rows.length === 0) {
+            resolve(
+              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません")
+            );
+          } else {
+            const res = BASIC_INFO.SUCCESS_MSG();
+            res.id = rows[0].id;
+            resolve(res);
+          }
+        }
+      });
+    });
+  }
+  
+
   static async getUUID(
     con: mysql.Connection,
     id: string
@@ -163,6 +190,33 @@ export class sql_util {
           }
         }
       );
+    });
+  }
+
+  static async getIntegrations(
+    con: mysql.Connection,
+    uuid: number
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `SELECT * FROM integration WHERE uuid = ?`;
+
+    return new Promise((resolve, reject) => {
+      con.query(query, [uuid], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          const rows = results as mysql.RowDataPacket[];
+          if (rows.length === 0) {
+            resolve(BASIC_INFO.FAILED_MSG("message", "Integrationが存在しません"));
+          } else {
+            const res = BASIC_INFO.SUCCESS_MSG();
+            res.discord = rows[0].discord;
+            res.Line = rows[0].Line;
+            res.github = rows[0].github;
+            res.teams = rows[0].teams;
+            resolve(res);
+          }
+        }
+      });
     });
   }
 }

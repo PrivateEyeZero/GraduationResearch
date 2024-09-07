@@ -4,7 +4,7 @@ import { BACKEND_URL } from "@/basic_info";
 import { Box, Button, Input, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {Session} from "../../_util/session";
+import { Session } from "../../_util/session";
 
 const url = BACKEND_URL + "/auth/login"; // Replace with your target URL
 export default function Login() {
@@ -26,7 +26,7 @@ export default function Login() {
       console.log(data); // Handle the response data as needed
       if (data.result === "success") {
         Session.setSessionId(data.session_id);
-        console.log("test")
+        console.log("test");
         router.push("/debug");
       }
     } catch (error) {
