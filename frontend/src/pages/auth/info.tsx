@@ -8,18 +8,13 @@ import {
 } from "@/basic_info";
 import {
   Box,
-  Text,
   Heading,
   List,
   ListItem,
   ListIcon,
-  Spinner,
-  Alert,
-  AlertIcon,
   Button,
 } from "@chakra-ui/react";
 import { CheckCircleIcon, WarningIcon, NotAllowedIcon } from "@chakra-ui/icons";
-import { get } from "http";
 
 interface UserInfo {
   userId: string;
@@ -121,9 +116,7 @@ const AuthInfo: React.FC = () => {
           <ListItem>
             {getInfoItem("Discord", userInfo.discordId, "/auth/discord")}
           </ListItem>
-          <ListItem>
-            {getInfoItem("Teams", userInfo.teamsId)}
-          </ListItem>
+          <ListItem>{getInfoItem("Teams", userInfo.teamsId)}</ListItem>
         </List>
       )}
     </Box>

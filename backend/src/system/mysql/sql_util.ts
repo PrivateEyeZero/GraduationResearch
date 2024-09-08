@@ -10,6 +10,7 @@ export class sql_util {
   ): Promise<void> {
     await sql_util.createUserTableIfNotExists(con);
     await sql_util.createIntegrationTableIfNotExists(con);
+    await sql_util.createGroupTableIfNotExists(con);
   }
   static async createUserTableIfNotExists(
     con: mysql.Connection,
@@ -84,7 +85,7 @@ export class sql_util {
 
   static async getUser(
     con: mysql.Connection,
-    uuid: number
+    uuid: number,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `SELECT id FROM user WHERE uuid = ?`;
 
@@ -96,7 +97,7 @@ export class sql_util {
           const rows = results as mysql.RowDataPacket[];
           if (rows.length === 0) {
             resolve(
-              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません")
+              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません"),
             );
           } else {
             const res = BASIC_INFO.SUCCESS_MSG();
@@ -107,12 +108,11 @@ export class sql_util {
       });
     });
   }
-  
 
   static async getUUID(
     con: mysql.Connection,
-    id: string
-  ): Promise<string|null> {
+    id: string,
+  ): Promise<string | null> {
     const query = `SELECT uuid FROM user WHERE id = ?`;
 
     return new Promise((resolve, reject) => {
@@ -123,7 +123,7 @@ export class sql_util {
           const rows = results as mysql.RowDataPacket[];
           if (rows.length === 0) {
             resolve(
-              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません")
+              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません"),
             );
           } else {
             // UUIDを取得し、レスポンスとして返す
@@ -135,6 +135,57 @@ export class sql_util {
     });
   }
 
+  //Group-table
+  static async createGroupTableIfNotExists(
+    con: mysql.Connection,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        CREATE TABLE IF NOT EXISTS \`group\` (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(32) NOT NULL UNIQUE,
+          admin_role BIGINT,
+          user_role BIGINT,
+          channel BIGINT
+        )
+      `;
+
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  static async addGroup(
+    con: mysql.Connection,
+    name: string,
+    admin_role: bigint,
+    user_role: bigint,
+    channel: bigint,
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      INSERT INTO \`group\` (name, admin_role, user_role, channel)
+      VALUES (?, ?, ?, ?)
+    `;
+
+    return new Promise((resolve, reject) => {
+      con.query(
+        query,
+        [name, admin_role, user_role, channel],
+        (error, results) => {
+          if (error) {
+            resolve(BASIC_INFO.FAILED_MSG("message", error));
+          } else {
+            resolve(BASIC_INFO.SUCCESS_MSG());
+          }
+        },
+      );
+    });
+  }
   //Integration-table
   static async createIntegrationTableIfNotExists(
     con: mysql.Connection,
@@ -166,7 +217,7 @@ export class sql_util {
     discord?: string,
     line?: string,
     github?: string,
-    teams?: string
+    teams?: string,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       INSERT INTO integration (uuid, discord, Line, github, teams)
@@ -188,14 +239,14 @@ export class sql_util {
           } else {
             resolve(BASIC_INFO.SUCCESS_MSG());
           }
-        }
+        },
       );
     });
   }
 
   static async getIntegrations(
     con: mysql.Connection,
-    uuid: number
+    uuid: number,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `SELECT * FROM integration WHERE uuid = ?`;
 
@@ -206,7 +257,9 @@ export class sql_util {
         } else {
           const rows = results as mysql.RowDataPacket[];
           if (rows.length === 0) {
-            resolve(BASIC_INFO.FAILED_MSG("message", "Integrationが存在しません"));
+            resolve(
+              BASIC_INFO.FAILED_MSG("message", "Integrationが存在しません"),
+            );
           } else {
             const res = BASIC_INFO.SUCCESS_MSG();
             res.discord = rows[0].discord;

@@ -4,9 +4,11 @@ import bodyParser from "body-parser";
 import cors from "cors"; // 追加
 import dotenv from "dotenv";
 import authRouter from "./auth/auth";
+import groupRouter from "./group/group";
 import path from "path";
 import { SQL } from "./system/mysql/sql";
 import { sql_util } from "./system/mysql/sql_util";
+import { Discord } from "./discord/discord";
 
 const app = express();
 const BASIC_INFO = require("./basic_info.ts");
@@ -19,6 +21,7 @@ app.use(cors());
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/auth", authRouter);
+app.use("/group", groupRouter);
 
 const server = http.createServer(app);
 server.listen(BASIC_INFO.PORT, () => {
@@ -35,4 +38,6 @@ const sql: SQL = new SQL(
 sql.init();
 sql_util.createAllTablesIfNotExists(sql.getConnection());
 
-export { app, server, sql };
+const discord = new Discord();
+
+export { app, server, sql, discord };

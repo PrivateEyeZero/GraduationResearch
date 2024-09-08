@@ -6,7 +6,7 @@ const FLONTEND_URL = "http://localhost:3000";
 const SYSTEM_NAME = "nitfc-gr";
 
 const INVALID_SESSION_MSG = "invalid-session";
-const INVALID_SESSION_PAGE = "/auth/invalid-session";
+const INVALID_SESSION_PAGE = "/auth/invalid_session";
 
 export {
   BACKEND_URL,
