@@ -5,6 +5,7 @@ import cors from "cors"; // 追加
 import dotenv from "dotenv";
 import authRouter from "./auth/auth";
 import groupRouter from "./group/group";
+import messageRouter from "./message/message";
 import path from "path";
 import { SQL } from "./system/mysql/sql";
 import { sql_util } from "./system/mysql/sql_util";
@@ -22,6 +23,7 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/auth", authRouter);
 app.use("/group", groupRouter);
+app.use("/message", messageRouter);
 
 const server = http.createServer(app);
 server.listen(BASIC_INFO.PORT, () => {

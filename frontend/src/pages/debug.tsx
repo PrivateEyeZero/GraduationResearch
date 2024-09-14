@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 export default function Debug() {
   const router = useRouter();
   const handleRedirect = () => {
-    router.push("/group/add_group");
+    router.push("/message/send");
   };
 
   return (

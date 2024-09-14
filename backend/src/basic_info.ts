@@ -27,8 +27,16 @@ const FAILED_MSG = (
     : { result: "failed", [`${key}`]: value };
 
 const INVALID_SESSION_MSG = "invalid-session";
+const INVALID_PROVIDER_MSG = "invalid-provider";
 const NO_PERMISSION_MSG = "no-permission";
-const NO_DISCOD_MSG = "discordが連携されていません";
+const NO_DISCOD_MSG = "no-registerd-discord";
+
+//Provider
+enum PROVIDER {
+  DISCORD = "discord",
+  LINE = "line",
+  TEAMS = "teams",
+}
 
 module.exports = {
   //System
@@ -47,4 +55,8 @@ module.exports = {
   INVALID_SESSION_MSG,
   NO_PERMISSION_MSG,
   NO_DISCOD_MSG,
+  INVALID_PROVIDER_MSG,
+
+  //Provider
+  PROVIDER,
 };

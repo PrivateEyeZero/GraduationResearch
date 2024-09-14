@@ -5,6 +5,11 @@ import { sql, discord } from "../server";
 import { DiscordUtil } from "../discord/discord_util";
 const BASIC_INFO = require("../basic_info.ts");
 
+const LOG_CHANNEL: bigint =
+  typeof process.env.DISCORD_LOG_CHANNEL_ID === "string"
+    ? BigInt(process.env.DISCORD_LOG_CHANNEL_ID)
+    : BigInt(-1);
+
 export const add_group = async (req: Request, res: Response) => {
   const session_id = req.body.session_id as string;
   const group_name = req.body.group_name as string;
@@ -52,7 +57,7 @@ export const add_group = async (req: Request, res: Response) => {
 
   if (result.result === "success")
     DiscordUtil.sendMessage(
-      group_channel,
+      LOG_CHANNEL,
       `**グループが作成されました。**\nグループ名: ${group_name}\n管理者ロール: <@&${group_admin_role}>\nユーザーロール: <@&${group_user_role}>\nチャンネル: <#${group_channel}>`,
     );
 

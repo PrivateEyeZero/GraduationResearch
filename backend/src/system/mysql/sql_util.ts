@@ -195,7 +195,7 @@ export class sql_util {
         CREATE TABLE IF NOT EXISTS integration (
           uuid INT NOT NULL PRIMARY KEY,
           discord VARCHAR(32),
-          Line VARCHAR(32),
+          line VARCHAR(32),
           github VARCHAR(32),
           teams VARCHAR(32)
         )
@@ -220,11 +220,11 @@ export class sql_util {
     teams?: string,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
-      INSERT INTO integration (uuid, discord, Line, github, teams)
+      INSERT INTO integration (uuid, discord, line, github, teams)
       VALUES (?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         discord = VALUES(discord),
-        Line = COALESCE(VALUES(Line), Line),
+        line = COALESCE(VALUES(line), line),
         github = COALESCE(VALUES(github), github),
         teams = COALESCE(VALUES(teams), teams)
     `;
@@ -263,7 +263,7 @@ export class sql_util {
           } else {
             const res = BASIC_INFO.SUCCESS_MSG();
             res.discord = rows[0].discord;
-            res.Line = rows[0].Line;
+            res.line = rows[0].line;
             res.github = rows[0].github;
             res.teams = rows[0].teams;
             resolve(res);
