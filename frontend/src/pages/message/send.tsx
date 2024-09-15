@@ -24,7 +24,10 @@ const send_url = BACKEND_URL + "/message/send";
 const SendMessage = () => {
   const [providerOptions, setProviderOptions] = useState<string[]>([]);
   const [provider, setProvider] = useState("");
-  const [channelId, setChannelId] = useState("");
+  const [groups, setGroups] = useState<{
+    [provider: string]: { id: string; name: string }[];
+  } | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -49,14 +52,15 @@ const SendMessage = () => {
         const data = await response.json();
         if (data.message === INVALID_SESSION_MSG)
           router.push(INVALID_SESSION_PAGE);
-        const options = [];
 
-        // discord, teams, lineがnullでなければ、候補として追加
+        const options = [];
         if (data.discord) options.push(PROVIDER.DISCORD);
         if (data.teams) options.push(PROVIDER.TEAMS);
         if (data.line) options.push(PROVIDER.LINE);
-
         setProviderOptions(options);
+        setGroups(data.groups);
+
+        console.log(groups);
       } catch (error) {
         console.error("エラーが発生しました", error);
       } finally {
@@ -69,6 +73,10 @@ const SendMessage = () => {
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setProvider(e.target.value);
+  };
+
+  const handleGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedGroup(e.target.value);
   };
 
   const handleSubmit = async () => {
@@ -91,7 +99,7 @@ const SendMessage = () => {
         body: JSON.stringify({
           session_id: session_id,
           provider: provider,
-          channelId: channelId,
+          group_id: selectedGroup, // 選択されたグループのIDを送信
           message: message,
         }),
       })
@@ -122,16 +130,21 @@ const SendMessage = () => {
         </Select>
       </FormControl>
 
-      {provider === "discord" && (
-        <FormControl mb={4}>
-          <FormLabel>チャンネルID</FormLabel>
-          <Input
-            value={channelId}
-            onChange={(e) => setChannelId(e.target.value)}
-            placeholder="チャンネルIDを入力してください"
-          />
-        </FormControl>
-      )}
+      <FormControl mb={4}>
+        <FormLabel>グループ選択</FormLabel>
+        <Select value={selectedGroup} onChange={handleGroupChange}>
+          <option value="">グループを選択してください</option>
+          {provider && groups && groups[provider] ? (
+            groups[provider].map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))
+          ) : (
+            <></>
+          )}
+        </Select>
+      </FormControl>
 
       <FormControl mb={4}>
         <FormLabel>メッセージ</FormLabel>

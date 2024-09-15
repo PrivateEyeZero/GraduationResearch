@@ -14,6 +14,7 @@ export class SQL {
       user: user,
       password: password,
       database: database,
+      bigNumberStrings: true,
     });
   }
 

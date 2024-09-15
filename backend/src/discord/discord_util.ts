@@ -11,7 +11,7 @@ export class DiscordUtil {
     try {
       const member = await guild.members.fetch(userId);
 
-      return member.roles.cache.map((role) => role.name);
+      return member.roles.cache.map((role) => role.id);
     } catch (error) {
       console.error(`Error fetching user roles: ${error}`);
       return [];
@@ -27,7 +27,6 @@ export class DiscordUtil {
 
     try {
       const member = await guild.members.fetch(userId);
-
       return member.roles.cache.has(roleId);
     } catch (error) {
       console.error(`Error checking user role: ${error}`);
@@ -52,9 +51,32 @@ export class DiscordUtil {
     }
   }
 
-  static async sendMessage(channelId: bigint, msg: string): Promise<void> {
+  static async sendMessage(
+    channelId: string | bigint,
+    msg: string,
+  ): Promise<void> {
+    const id = typeof channelId === "string" ? BigInt(channelId) : channelId;
+
     try {
       const client = discord.getClient();
+      const channel = await client.channels.fetch(id.toString());
+
+      if (channel && channel instanceof TextChannel) {
+        // メッセージを送信
+        await channel.send(msg);
+        console.log(`Message sent to channel ${id}`);
+      } else {
+        console.error(`Channel ${id} is not a text channel or not found`);
+      }
+    } catch (error) {
+      console.error(`Error sending message: ${error}`);
+    }
+  }
+
+  static async sendLog(msg: string): Promise<void> {
+    try {
+      const client = discord.getClient();
+      const channelId = discord.getLog();
       const channel = await client.channels.fetch(channelId.toString());
 
       if (channel && channel instanceof TextChannel) {

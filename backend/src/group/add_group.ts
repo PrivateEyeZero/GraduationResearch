@@ -3,12 +3,8 @@ import Session from "../system/session";
 import { sql_util } from "../system/mysql/sql_util";
 import { sql, discord } from "../server";
 import { DiscordUtil } from "../discord/discord_util";
-const BASIC_INFO = require("../basic_info.ts");
 
-const LOG_CHANNEL: bigint =
-  typeof process.env.DISCORD_LOG_CHANNEL_ID === "string"
-    ? BigInt(process.env.DISCORD_LOG_CHANNEL_ID)
-    : BigInt(-1);
+const BASIC_INFO = require("../basic_info.ts");
 
 export const add_group = async (req: Request, res: Response) => {
   const session_id = req.body.session_id as string;
@@ -47,19 +43,19 @@ export const add_group = async (req: Request, res: Response) => {
     return;
   }
 
-  const result = await sql_util.addGroup(
+  const discord_result = await sql_util.addGroup(
     sql.getConnection(),
+    BASIC_INFO.PROVIDER.DISCORD,
     group_name,
     group_admin_role,
     group_user_role,
     group_channel,
   );
 
-  if (result.result === "success")
-    DiscordUtil.sendMessage(
-      LOG_CHANNEL,
+  if (discord_result.result === "success")
+    DiscordUtil.sendLog(
       `**グループが作成されました。**\nグループ名: ${group_name}\n管理者ロール: <@&${group_admin_role}>\nユーザーロール: <@&${group_user_role}>\nチャンネル: <#${group_channel}>`,
     );
 
-  res.send(result);
+  res.send(discord_result);
 };

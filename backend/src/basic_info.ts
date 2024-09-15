@@ -10,7 +10,9 @@ const DISCORD_AUTH_REDIRECT_URI =
   "http://localhost:" + PORT + "/auth/discord/callback";
 
 //Response
-export type RESPONSE_MSG_TYPE = { [key: string]: RESPONSE_MSG_TYPE | string };
+export type RESPONSE_MSG_TYPE = {
+  [key: string]: RESPONSE_MSG_TYPE | string | string[];
+};
 const SUCCESS_MSG = (
   key: string | null = null,
   value: string | null = null,

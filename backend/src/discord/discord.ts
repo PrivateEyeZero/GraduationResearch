@@ -1,8 +1,10 @@
+import { log } from "console";
 import { Client, Guild, GatewayIntentBits } from "discord.js";
 
 export class Discord {
   private client: Client<boolean>;
   private guild: Guild | null;
+  private log_ch: bigint;
 
   constructor() {
     const client = new Client({
@@ -33,6 +35,8 @@ export class Discord {
       this.guild = guild;
     });
 
+    this.log_ch = BigInt(process.env.DISCORD_LOG_CHANNEL_ID as string);
+
     client.login(process.env.DISCORD_BOT_TOKEN);
   }
 
@@ -42,5 +46,9 @@ export class Discord {
 
   getGuild() {
     return this.guild;
+  }
+
+  getLog() {
+    return this.log_ch;
   }
 }
