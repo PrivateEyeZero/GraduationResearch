@@ -3,15 +3,13 @@ import Session from "../system/session";
 import { sql_util } from "../system/mysql/sql_util";
 import { sql, discord } from "../server";
 import { DiscordUtil } from "../discord/discord_util";
+import { group } from "console";
 
 const BASIC_INFO = require("../basic_info.ts");
 
 export const add_group = async (req: Request, res: Response) => {
   const session_id = req.body.session_id as string;
   const group_name = req.body.group_name as string;
-  const group_admin_role = req.body.group_admin_role as bigint;
-  const group_user_role = req.body.group_user_role as bigint;
-  const group_channel = req.body.group_channel as bigint;
 
   console.log(session_id);
 
@@ -43,18 +41,21 @@ export const add_group = async (req: Request, res: Response) => {
     return;
   }
 
+  const group_role =await DiscordUtil.createRole(discord.getGuild(), group_name);
+  const group_channel = await DiscordUtil.createChannel(discord.getGuild(), group_name);
+  if(!group_role || !group_channel){res.send(BASIC_INFO.FAILED_MSG("message", "no-msg"));return}
   const discord_result = await sql_util.addGroup(
     sql.getConnection(),
     BASIC_INFO.PROVIDER.DISCORD,
     group_name,
-    group_admin_role,
-    group_user_role,
-    group_channel,
+    BigInt(group_role),
+    BigInt(group_channel),
   );
+
 
   if (discord_result.result === "success")
     DiscordUtil.sendLog(
-      `**グループが作成されました。**\nグループ名: ${group_name}\n管理者ロール: <@&${group_admin_role}>\nユーザーロール: <@&${group_user_role}>\nチャンネル: <#${group_channel}>`,
+      `**グループが作成されました。**\nグループ名: ${group_name}\nロール: <@&${group_role}>\nチャンネル: <#${group_channel}>`,
     );
 
   res.send(discord_result);
