@@ -93,7 +93,7 @@ const AuthInfo: React.FC = () => {
       );
     }
   };
-
+/*
   if (error)
     return (
       <List spacing={1}>
@@ -102,7 +102,7 @@ const AuthInfo: React.FC = () => {
           <strong>{error}</strong>
         </ListItem>
       </List>
-    );
+    );*/
 
   return (
     <Box p={6}>
