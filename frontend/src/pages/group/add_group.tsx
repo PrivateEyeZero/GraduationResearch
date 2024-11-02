@@ -19,9 +19,6 @@ const url = BACKEND_URL + "/group/add_group";
 
 const RoleForm: React.FC = () => {
   const [group_name, setGroupName] = useState<string>("");
-  const [adminRole, setAdminRole] = useState<string>("");
-  const [userRole, setUserRole] = useState<string>("");
-  const [channel, setChannel] = useState<string>("");
 
   const router = useRouter();
 
@@ -43,9 +40,6 @@ const RoleForm: React.FC = () => {
     const data = {
       session_id: session_id,
       group_name: group_name,
-      group_admin_role: adminRole,
-      group_user_role: userRole,
-      group_channel: channel,
     };
 
     try {
@@ -83,36 +77,7 @@ const RoleForm: React.FC = () => {
           onChange={(e) => setGroupName(e.target.value)}
         />
       </FormControl>
-      <FormControl id="adminRole" isRequired>
-        <FormLabel>管理ロールID:</FormLabel>
-        <Input
-          type="text"
-          value={adminRole}
-          onChange={(e) => setAdminRole(e.target.value)}
-          pattern="\d*"
-          title="数字のみを入力してください"
-        />
-      </FormControl>
-      <FormControl id="userRole" isRequired>
-        <FormLabel>一般ロールID:</FormLabel>
-        <Input
-          type="text"
-          value={userRole}
-          onChange={(e) => setUserRole(e.target.value)}
-          pattern="\d*"
-          title="数字のみを入力してください"
-        />
-      </FormControl>
-      <FormControl id="channel" isRequired>
-        <FormLabel>グループチャンネル:</FormLabel>
-        <Input
-          type="text"
-          value={channel}
-          onChange={(e) => setChannel(e.target.value)}
-          pattern="\d*"
-          title="数字のみを入力してください"
-        />
-      </FormControl>
+
       <Button type="submit" colorScheme="teal" width="180px">
         送信
       </Button>

@@ -254,6 +254,33 @@ export class sql_util {
     });
   }
 
+  static async getUserGroups(
+    con: mysql.Connection,
+    userId: number,
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      SELECT g.name 
+      FROM group_member gm
+      JOIN \`group\` g ON gm.group_id = g.id
+      WHERE gm.user_id = ?
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(query, [userId], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          const rows = results as mysql.RowDataPacket[];
+          const groupNames = rows.map(row => row.name);
+          const res = BASIC_INFO.SUCCESS_MSG();
+          res.groupNames = groupNames;
+          resolve(res);
+
+        }
+      });
+    });
+  }
+
   //Integration-table
   static async createIntegrationTableIfNotExists(
     con: mysql.Connection,
@@ -354,7 +381,7 @@ export class sql_util {
           sender INT,
           status ENUM('user', 'group'),
           receiver INT,
-          FOREIGN KEY (sender) REFERENCES user(uuid)
+          FOREIGN KEY (sender) REFERENCES user(uuid) ON DELETE SET NULL,
         );
       `;
 
@@ -379,8 +406,8 @@ export class sql_util {
           message_id INT,
           safety BOOL NOT NULL,
           comment TEXT,
-          FOREIGN KEY (user_id) REFERENCES user(uuid),
-          FOREIGN KEY (message_id) REFERENCES message(id)
+          FOREIGN KEY (user_id) REFERENCES user(uuid) ON DELETE SET NULL,
+          FOREIGN KEY (message_id) REFERENCES message(id) ON DELETE SET NULL
         );
       `;
 

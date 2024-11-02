@@ -21,22 +21,7 @@ export const info = async (req: Request, res: Response) => {
   const result = await sql_util.getIntegrations(sql.getConnection(), uuid);
   result.uuid = uuid.toString();
   result.id = (await sql_util.getUser(sql.getConnection(), uuid)).id;
-  const discord_roles = await DiscordUtil.getUserRoles(
-    discord.getGuild(),
-    result.discord as string,
-  );
-  console.log(discord_roles);
-  if (discord_roles.length > 0) {
-    const discord_groups = (
-      await sql_util.getAdminGroups(
-        sql.getConnection(),
-        BASIC_INFO.PROVIDER.DISCORD,
-        discord_roles,
-      )
-    ).groups;
-    result.groups = { discord: discord_groups };
-    console.log(discord_groups);
-  }
+  result.groups = await sql_util.getUserGroups(sql.getConnection(), uuid);
 
   console.log(result);
   res.send(result);
