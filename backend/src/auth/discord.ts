@@ -23,6 +23,8 @@ export const discord = (req: Request, res: Response) => {
     return;
   }
   // Discord認証のURLを構築
+  console.log("clent_id", process.env.DISCORD_CLIENT_ID);
+  console.log("redirect_uri", REDIRECT_URL);
   const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${REDIRECT_URL}&response_type=code&scope=identify&state=${session_id}`;
   // クライアントにDiscord認証のURLを返す
   res.json({ redirectUrl: discordAuthUrl });

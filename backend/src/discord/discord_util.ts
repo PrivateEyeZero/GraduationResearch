@@ -74,6 +74,7 @@ export class DiscordUtil {
   }
 
   static async sendLog(msg: string): Promise<void> {
+    
     try {
       const client = discord.getClient();
       const channelId = discord.getLog();
@@ -91,6 +92,7 @@ export class DiscordUtil {
     } catch (error) {
       console.error(`Error sending message: ${error}`);
     }
+    
   }
   static async createRole(guild: Guild | null, roleName: string): Promise<string | null> {
     if (guild === null) return null;
@@ -111,7 +113,7 @@ export class DiscordUtil {
 static async createChannel(
     guild: Guild | null,
     channelName: string,
-    onlyRead: bigint[] | null = null,
+    onlyRead: string[] | null = null,
 ): Promise<string | null> {
     if (guild === null) return null;
 
@@ -131,7 +133,7 @@ static async createChannel(
     if (onlyRead) {
         for (const roleId of onlyRead) {
             permissionOverwrites.push({
-                id: roleId.toString(), // 閲覧権限を許可するロールID
+                id: roleId, // 閲覧権限を許可するロールID
                 allow: [PermissionFlagsBits.ViewChannel], // このロールに対する閲覧権限を許可
             });
         }

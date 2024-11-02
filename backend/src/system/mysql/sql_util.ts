@@ -381,7 +381,7 @@ export class sql_util {
           sender INT,
           status ENUM('user', 'group'),
           receiver INT,
-          FOREIGN KEY (sender) REFERENCES user(uuid) ON DELETE SET NULL,
+          FOREIGN KEY (sender) REFERENCES user(uuid) ON DELETE SET NULL
         );
       `;
 
