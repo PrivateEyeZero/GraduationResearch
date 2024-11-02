@@ -11,6 +11,9 @@ export class sql_util {
     await sql_util.createUserTableIfNotExists(con);
     await sql_util.createIntegrationTableIfNotExists(con);
     await sql_util.createGroupTableIfNotExists(con);
+    await sql_util.createGroupMemberTableIfNotExists(con);
+    await sql_util.createMessageTableIfNotExists(con);
+    await sql_util.createResponseTableIfNotExists(con);
   }
   static async createUserTableIfNotExists(
     con: mysql.Connection,
@@ -20,8 +23,9 @@ export class sql_util {
         CREATE TABLE IF NOT EXISTS user (
           uuid INT AUTO_INCREMENT PRIMARY KEY,
           id VARCHAR(32) NOT NULL UNIQUE,
-          pass VARCHAR(32) NOT NULL
-        )
+          pass VARCHAR(32) NOT NULL UNIQUE,
+          enable BOOL NOT NULL DEFAULT TRUE
+        );
       `;
 
       con.query(query, (error, results) => {
@@ -145,10 +149,9 @@ export class sql_util {
           id INT AUTO_INCREMENT PRIMARY KEY,
           name VARCHAR(32) NOT NULL UNIQUE,
           provider VARCHAR(32) NOT NULL,
-          admin_role TEXT,
-          user_role TEXT,
+          role TEXT,
           channel TEXT
-        )
+        );
       `;
 
       con.query(query, (error, results) => {
@@ -165,19 +168,18 @@ export class sql_util {
     con: mysql.Connection,
     provider: string,
     name: string,
-    admin_role: bigint,
-    user_role: bigint,
+    role: bigint,
     channel: bigint,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
-      INSERT INTO \`group\` (name, provider, admin_role, user_role, channel)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO \`group\` (name, provider, role, channel)
+      VALUES (?, ?, ?, ?)
     `;
 
     return new Promise((resolve, reject) => {
       con.query(
         query,
-        [name, provider, admin_role, user_role, channel],
+        [name, provider, role, channel],
         (error, results) => {
           if (error) {
             resolve(BASIC_INFO.FAILED_MSG("message", error));
@@ -189,33 +191,7 @@ export class sql_util {
     });
   }
 
-  static async getAdminGroups(
-    con: mysql.Connection,
-    provider: string,
-    checker: string[],
-  ): Promise<RESPONSE_MSG_TYPE> {
-    const query = `
-      SELECT id, name 
-      FROM \`group\`
-      WHERE provider = ? 
-      AND admin_role IN (?)
-    `;
 
-    return new Promise((resolve, reject) => {
-      con.query(query, [provider, checker], (error, results) => {
-        if (error) {
-          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
-        } else {
-          const rows = results as mysql.RowDataPacket[];
-          const groupList = rows.map((row) => ({ id: row.id, name: row.name }));
-
-          const res = BASIC_INFO.SUCCESS_MSG();
-          res.groups = groupList;
-          resolve(res);
-        }
-      });
-    });
-  }
 
   static async getGroupsInfo(
     con: mysql.Connection,
@@ -223,7 +199,7 @@ export class sql_util {
     provider: string,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
-      SELECT id, name, provider, admin_role, user_role, channel 
+      SELECT id, name, provider, role, channel 
       FROM \`group\`
       WHERE id = ? AND provider = ?
     `;
@@ -242,14 +218,37 @@ export class sql_util {
               ),
             );
           } else {
-            console.log(rows[0].admin_role);
+            console.log(rows[0].role);
             const res = BASIC_INFO.SUCCESS_MSG();
-            res.admin_role = rows[0].admin_role;
-            res.user_role = rows[0].user_role;
+            res.role = rows[0].role;
             res.channel = rows[0].channel;
-            console.log(res.admin_role);
+            console.log(res.role);
             resolve(res);
           }
+        }
+      });
+    });
+  }
+
+  //GroupMember-table
+  static async createGroupMemberTableIfNotExists(
+    con: mysql.Connection,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        CREATE TABLE IF NOT EXISTS group_member (
+          user_id INT,
+          group_id INT,
+          FOREIGN KEY (user_id) REFERENCES user(uuid) ON DELETE CASCADE,
+          FOREIGN KEY (group_id) REFERENCES \`group\`(id) ON DELETE CASCADE
+        );
+      `;
+
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
         }
       });
     });
@@ -262,12 +261,13 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `
         CREATE TABLE IF NOT EXISTS integration (
-          uuid INT NOT NULL PRIMARY KEY,
+          uuid INT PRIMARY KEY,
           discord VARCHAR(32),
           line VARCHAR(32),
           github VARCHAR(32),
-          teams VARCHAR(32)
-        )
+          teams VARCHAR(32),
+          FOREIGN KEY (uuid) REFERENCES user(uuid) ON DELETE CASCADE
+        );
       `;
 
       con.query(query, (error, results) => {
@@ -327,7 +327,7 @@ export class sql_util {
           const rows = results as mysql.RowDataPacket[];
           if (rows.length === 0) {
             resolve(
-              BASIC_INFO.FAILED_MSG("message", "Integrationが存在しません"),
+              BASIC_INFO.SUCCESS_MSG("message", "Integrationが存在しません"),
             );
           } else {
             const res = BASIC_INFO.SUCCESS_MSG();
@@ -337,6 +337,58 @@ export class sql_util {
             res.teams = rows[0].teams;
             resolve(res);
           }
+        }
+      });
+    });
+  }
+
+  //Message-table
+  static async createMessageTableIfNotExists(
+    con: mysql.Connection,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        CREATE TABLE IF NOT EXISTS message (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          content TEXT NOT NULL,
+          sender INT,
+          status ENUM('user', 'group'),
+          receiver INT,
+          FOREIGN KEY (sender) REFERENCES user(uuid)
+        );
+      `;
+
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  //Response-table
+  static async createResponseTableIfNotExists(
+    con: mysql.Connection,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `CREATE TABLE IF NOT EXISTS response (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT,
+          message_id INT,
+          safety BOOL NOT NULL,
+          comment TEXT,
+          FOREIGN KEY (user_id) REFERENCES user(uuid),
+          FOREIGN KEY (message_id) REFERENCES message(id)
+        );
+      `;
+
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
         }
       });
     });
