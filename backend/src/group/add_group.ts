@@ -3,7 +3,6 @@ import Session from "../system/session";
 import { sql_util } from "../system/mysql/sql_util";
 import { sql, discord } from "../server";
 import { DiscordUtil } from "../discord/discord_util";
-import { group } from "console";
 
 const BASIC_INFO = require("../basic_info.ts");
 
@@ -14,7 +13,7 @@ export const add_group = async (req: Request, res: Response) => {
   console.log(session_id);
 
   const uuid = Session.getSessionUser(session_id);
-  console.log(uuid);
+  console.log("add_group user: ",uuid);
   if (uuid === null) {
     res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.INVALID_SESSION_MSG));
     return;

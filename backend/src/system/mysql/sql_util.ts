@@ -24,6 +24,7 @@ export class sql_util {
           uuid INT AUTO_INCREMENT PRIMARY KEY,
           id VARCHAR(32) NOT NULL UNIQUE,
           pass VARCHAR(32) NOT NULL UNIQUE,
+          admin BOOL NOT NULL DEFAULT FALSE,
           enable BOOL NOT NULL DEFAULT TRUE
         );
       `;
@@ -191,7 +192,28 @@ export class sql_util {
     });
   }
 
-
+  static async getGroups(
+    con: mysql.Connection
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      SELECT id, name 
+      FROM \`group\`
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(query, (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          const rows = results as mysql.RowDataPacket[];
+          const groupIds = rows.map(row => ({id:row.id,name:row.name}));
+          const res = BASIC_INFO.SUCCESS_MSG();
+          res.groups = groupIds;
+          resolve(res);
+        }
+      });
+    });
+  }
 
   static async getGroupsInfo(
     con: mysql.Connection,
@@ -253,6 +275,39 @@ export class sql_util {
       });
     });
   }
+
+  static async getGroupMembers(
+    con: mysql.Connection,
+    group_name: string
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      SELECT u.id, u.enable 
+      FROM user u
+      JOIN group_member gm ON u.uuid = gm.user_id
+      JOIN \`group\` g ON gm.group_id = g.id
+      WHERE g.name = ?
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(query, [group_name], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          const rows = results as mysql.RowDataPacket[];
+
+          const members = rows.map((row) => ({
+            id: row.id,
+            enable: row.enable,
+          }));
+          const res = BASIC_INFO.SUCCESS_MSG();
+          res.members = members;
+          resolve(res);
+          
+        }
+      });
+    });
+  }
+  
 
   static async getUserGroups(
     con: mysql.Connection,
