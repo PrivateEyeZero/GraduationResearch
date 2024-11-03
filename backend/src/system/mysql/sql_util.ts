@@ -23,7 +23,7 @@ export class sql_util {
         CREATE TABLE IF NOT EXISTS user (
           uuid INT AUTO_INCREMENT PRIMARY KEY,
           id VARCHAR(32) NOT NULL UNIQUE,
-          pass VARCHAR(32) NOT NULL UNIQUE,
+          pass VARCHAR(32) NOT NULL,
           admin BOOL NOT NULL DEFAULT FALSE,
           enable BOOL NOT NULL DEFAULT TRUE
         );
@@ -50,6 +50,8 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       con.query(query, [id, pass], (error, results) => {
         if (error) {
+          console.log(error);
+
           if (error.code === "ER_DUP_ENTRY") {
             resolve(
               BASIC_INFO.FAILED_MSG("message", "IDが既に登録されています"),

@@ -31,31 +31,6 @@ export const send = async (req: Request, res: Response) => {
     provider,
   );
 
-  const isAdmin = await (async () => {
-    // providerに基づく処理を行う
-    switch (provider) {
-      case BASIC_INFO.PROVIDER.DISCORD:
-        const discord_id = integrations.discord.toString();
-        if (!discord_id) {
-          res.send(
-            BASIC_INFO.FAILED_MSG("message", BASIC_INFO.NO_PERMISSION_MSG),
-          );
-          return;
-        }
-        return DiscordUtil.authUserRole(
-          discord.getGuild(),
-          discord_id,
-          groupInfo?.admin_role as string,
-        );
-      default:
-        return false;
-    }
-  })();
-  console.log(isAdmin);
-  if (!isAdmin) {
-    res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.NO_PERMISSION_MSG));
-    return;
-  }
 
   const p = BASIC_INFO.PROVIDER;
   switch (provider) {

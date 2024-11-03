@@ -164,9 +164,14 @@ const RoleFormWithMembers: React.FC = () => {
           <Divider />
           {filteredNonMembers.length > 0 ? (
             filteredNonMembers.map((member) => (
-              <Text key={member.uuid}>
+              <Flex borderRadius="0.7em" backgroundColor="#FFFAE2" justify="space-between" marginTop="0.3em" display="flex" height="1.6em" alignItems="center"paddingLeft="0.7em" paddingRight="0.7em">
+              <Text key={member.uuid} padding="0px" margin="0px">
                 {member.id}
               </Text>
+              <Button padding="0px" margin="0px" height="80%">
+                このユーザを追加
+              </Button>
+              </Flex>
             ))
           ) : (
             <Text>未参加メンバーがいません</Text>
