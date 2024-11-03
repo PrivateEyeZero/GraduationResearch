@@ -64,6 +64,23 @@ export class sql_util {
     });
   }
 
+  static async getAllUser(con: mysql.Connection): Promise<{ uuid: number; id: string }[]> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT uuid, id FROM user;
+      `;
+  
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          const rows = results as mysql.RowDataPacket[];
+          resolve(BASIC_INFO.SUCCESS_MSG("members",rows.map((row) => ({ uuid: row.uuid, id: row.id }))));
+        }
+      });
+    });
+  }
+
   static async authUser(
     con: mysql.Connection,
     id: string,

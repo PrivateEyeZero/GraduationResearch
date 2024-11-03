@@ -1,4 +1,3 @@
-// src/components/RoleFormWithMembers.tsx
 import React, { useEffect, useState } from "react";
 import { Session } from "../../_util/session";
 import { useRouter } from "next/navigation";
@@ -16,6 +15,8 @@ import {
   Select,
   Box,
   Text,
+  Flex,
+  Divider,
 } from "@chakra-ui/react";
 
 const groupUrl = BACKEND_URL + "/group/get_groups";
@@ -25,7 +26,9 @@ const RoleFormWithMembers: React.FC = () => {
   const [groupName, setGroupName] = useState<string>("");
   const [groups, setGroups] = useState<Array<{ id: number; name: string }>>([]);
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
-  const [members, setMembers] = useState<Array<{ id: string; enable: boolean }>>([]);
+  const [members, setMembers] = useState<Array<{ id: string; uuid: string }>>([]);
+  const [nonMembers, setNonMembers] = useState<Array<{ id: string; uuid: string }>>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const router = useRouter();
 
@@ -34,7 +37,6 @@ const RoleFormWithMembers: React.FC = () => {
     if (session_id === null) {
       router.push(INVALID_SESSION_PAGE);
     } else {
-      // グループ一覧を取得
       fetchGroups(session_id);
     }
   }, []);
@@ -49,7 +51,6 @@ const RoleFormWithMembers: React.FC = () => {
         body: JSON.stringify({ session_id }),
       });
       const data = await response.json();
-      console.log(data)
       if (data.result === "success") {
         setGroups(data.groups || []);
       } else if (data.message === INVALID_SESSION_MSG) {
@@ -62,17 +63,29 @@ const RoleFormWithMembers: React.FC = () => {
 
   const fetchMembers = async (session_id: string, groupId: number) => {
     try {
-      const response = await fetch(membersUrl, {
+      const response_gr = await fetch(membersUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ session_id, group_id: groupId }),
       });
-      const data = await response.json();
-      if (data.result === "success") {
-        setMembers(data.members || []);
-      } else if (data.message === INVALID_SESSION_MSG) {
+      const response_all = await fetch(membersUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ session_id, group_id: "" }),
+      });
+      const data_gr = await response_gr.json();
+      const data_all = await response_all.json();
+      if (data_gr.result === "success" && data_all.result === "success") {
+        const group_members = data_gr.members || [];
+        const all_members = data_all.members || [];
+        const non_members = all_members.filter((member: any) => !group_members.includes(member.id));
+        setMembers(data_gr.members || []);
+        setNonMembers(non_members);
+      } else if (data_gr.message === INVALID_SESSION_MSG || data_all.message === INVALID_SESSION_MSG) {
         router.push(INVALID_SESSION_PAGE);
       }
     } catch (error) {
@@ -88,6 +101,18 @@ const RoleFormWithMembers: React.FC = () => {
       fetchMembers(session_id, selectedId);
     }
   };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleShowAllIds = () => {
+    setSearchTerm("");
+  };
+
+  const filteredNonMembers = nonMembers.filter(member =>
+    member.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <VStack spacing={4} align="stretch">
@@ -105,17 +130,55 @@ const RoleFormWithMembers: React.FC = () => {
 
       {/* メンバー一覧の表示 */}
       {selectedGroup && (
-        <Box border="1px solid #ccc" borderRadius="md" p={4} width="100%">
-          <FormLabel>メンバー一覧:</FormLabel>
+        <Box border="1px solid #ccc" borderRadius="md" p={4} width="99%" backgroundColor="#E8FFFA">
+          <Box border="1px solid #ccc" backgroundColor="white">
+            <FormLabel>メンバー一覧</FormLabel>
+          </Box>
           {members.length > 0 ? (
             members.map((member) => (
-              <Text key={member.id}>
-                {member.id} - {member.enable ? "有効" : "無効"}
+              <Text key={member.uuid}>
+                {member.id}
               </Text>
             ))
           ) : (
             <Text>メンバーがいません</Text>
           )}
+        </Box>
+      )}
+
+      {/* 未参加メンバー一覧 */}
+      {selectedGroup && (
+        <Box border="1px solid #ccc" borderRadius="md" p={4} width="99%" backgroundColor="#FFE5E5">
+          <Flex justify="space-between" align="center" mb={3} border="1px solid #ccc" backgroundColor="white">
+            <Text fontSize="lg">未参加メンバー一覧</Text>
+            <Box display="flex">検索: 
+            <FormControl width="200px">
+              <Input
+                placeholder="検索..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </FormControl>
+            </Box>
+          </Flex>
+          <Divider />
+          {filteredNonMembers.length > 0 ? (
+            filteredNonMembers.map((member) => (
+              <Text key={member.uuid}>
+                {member.id}
+              </Text>
+            ))
+          ) : (
+            <Text>未参加メンバーがいません</Text>
+          )}
+          <Button
+            colorScheme="blue"
+            onClick={handleShowAllIds}
+            borderRadius="md"
+            mt={2}
+          >
+            全ユーザIDを表示
+          </Button>
         </Box>
       )}
     </VStack>

@@ -14,6 +14,6 @@ export const get_member = async (req: Request, res: Response) => {
     res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.INVALID_SESSION_MSG));
     return;
   }
-  const result = await sql_util.getGroupMembers(con, group_id);
+  const result = group_id ? await sql_util.getGroupMembers(con, group_id) : await sql_util.getAllUser(con);
   res.send(result);
 };
