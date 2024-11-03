@@ -79,7 +79,6 @@ const RoleFormWithMembers: React.FC = () => {
         },
         body: JSON.stringify({ session_id, group_id: groupId }),
       });
-      console.log(response_gr);
       const response_all = await fetch(getMembersUrl, {
         method: "POST",
         headers: {
@@ -89,8 +88,6 @@ const RoleFormWithMembers: React.FC = () => {
       });
       const data_gr = await response_gr.json();
       const data_all = await response_all.json();
-      console.log(data_gr);
-      console.log(data_all);
       if (data_gr.result === "success" && data_all.result === "success") {
         const group_members = data_gr.members || [];
         const group_members_uuids = group_members.map(
