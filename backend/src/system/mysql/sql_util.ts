@@ -295,16 +295,37 @@ export class sql_util {
     });
   }
 
+  static async addMember(
+    con: mysql.Connection,
+    user_id: number,
+    group_id: number,
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      INSERT INTO group_member (user_id, group_id)
+      VALUES (?, ?)
+    `;
+    console.log("sql-addmember",user_id, group_id);
+    return new Promise((resolve, _) => {
+      con.query(query, [user_id, group_id], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG());
+        }
+      });
+    });
+  }
+
   static async getGroupMembers(
     con: mysql.Connection,
     group_name: string
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
-      SELECT u.id, u.enable 
+      SELECT u.id, u.uuid 
       FROM user u
       JOIN group_member gm ON u.uuid = gm.user_id
       JOIN \`group\` g ON gm.group_id = g.id
-      WHERE g.name = ?
+      WHERE g.id = ?
     `;
   
     return new Promise((resolve, reject) => {
@@ -315,8 +336,8 @@ export class sql_util {
           const rows = results as mysql.RowDataPacket[];
 
           const members = rows.map((row) => ({
-            id: row.id,
-            enable: row.enable,
+            uuid: row.uuid,
+            id: row.id
           }));
           const res = BASIC_INFO.SUCCESS_MSG();
           res.members = members;

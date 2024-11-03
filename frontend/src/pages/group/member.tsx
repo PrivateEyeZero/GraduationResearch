@@ -18,22 +18,28 @@ import {
   Flex,
   Divider,
 } from "@chakra-ui/react";
+import { group } from "console";
 
 const groupUrl = BACKEND_URL + "/group/get_groups";
-const membersUrl = BACKEND_URL + "/group/member/get";
+const getMembersUrl = BACKEND_URL + "/group/member/get";
+const addMembersUrl = BACKEND_URL + "/group/member/add";
+
+interface Member { id: string; uuid: string }
 
 const RoleFormWithMembers: React.FC = () => {
   const [groupName, setGroupName] = useState<string>("");
   const [groups, setGroups] = useState<Array<{ id: number; name: string }>>([]);
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
-  const [members, setMembers] = useState<Array<{ id: string; uuid: string }>>([]);
-  const [nonMembers, setNonMembers] = useState<Array<{ id: string; uuid: string }>>([]);
+  const [members, setMembers] = useState<Array<Member>>([]);
+  const [nonMembers, setNonMembers] = useState<Array<Member>>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [session_id, setSessionId] = useState<string | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
     const session_id = Session.getSessionId();
+    setSessionId(session_id);
     if (session_id === null) {
       router.push(INVALID_SESSION_PAGE);
     } else {
@@ -63,14 +69,15 @@ const RoleFormWithMembers: React.FC = () => {
 
   const fetchMembers = async (session_id: string, groupId: number) => {
     try {
-      const response_gr = await fetch(membersUrl, {
+      const response_gr = await fetch(getMembersUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ session_id, group_id: groupId }),
       });
-      const response_all = await fetch(membersUrl, {
+      console.log(response_gr)
+      const response_all = await fetch(getMembersUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,10 +86,13 @@ const RoleFormWithMembers: React.FC = () => {
       });
       const data_gr = await response_gr.json();
       const data_all = await response_all.json();
+      console.log(data_gr)
+      console.log(data_all)
       if (data_gr.result === "success" && data_all.result === "success") {
         const group_members = data_gr.members || [];
+        const group_members_uuids = group_members.map((member: Member) => member.uuid);
         const all_members = data_all.members || [];
-        const non_members = all_members.filter((member: any) => !group_members.includes(member.id));
+        const non_members = all_members.filter((member: Member) => group_members_uuids.indexOf(member.uuid)==-1);
         setMembers(data_gr.members || []);
         setNonMembers(non_members);
       } else if (data_gr.message === INVALID_SESSION_MSG || data_all.message === INVALID_SESSION_MSG) {
@@ -113,6 +123,28 @@ const RoleFormWithMembers: React.FC = () => {
   const filteredNonMembers = nonMembers.filter(member =>
     member.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddMember = async (uuid: string) => {
+    console.log("Add member with uuid:", uuid);
+
+    try{
+      const response = await fetch(addMembersUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({session_id:session_id, group_id: selectedGroup, uuid: uuid }),
+      });
+      console.log(response)
+      const memberToAdd = nonMembers.find(member => member.uuid === uuid);
+      if (memberToAdd) {
+          setMembers(prevMembers => [...prevMembers, memberToAdd]);
+          setNonMembers(prevNonMembers => prevNonMembers.filter(member => member.uuid !== uuid));
+      }
+    }catch(error){
+      console.error(error)
+    }
+  }
 
   return (
     <VStack spacing={4} align="stretch">
@@ -156,7 +188,7 @@ const RoleFormWithMembers: React.FC = () => {
               <Input
                 placeholder="検索..."
                 value={searchTerm}
-                onChange={handleSearchChange}
+                onChange={handleSearchChange} 
               />
             </FormControl>
             </Box>
@@ -168,7 +200,7 @@ const RoleFormWithMembers: React.FC = () => {
               <Text key={member.uuid} padding="0px" margin="0px">
                 {member.id}
               </Text>
-              <Button padding="0px" margin="0px" height="80%">
+              <Button padding="0px" margin="0px" height="80%" onClick={()=>handleAddMember(member.uuid)}>
                 このユーザを追加
               </Button>
               </Flex>
