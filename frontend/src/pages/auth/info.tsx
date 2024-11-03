@@ -93,7 +93,7 @@ const AuthInfo: React.FC = () => {
       );
     }
   };
-/*
+  /*
   if (error)
     return (
       <List spacing={1}>

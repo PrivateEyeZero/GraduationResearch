@@ -66,18 +66,25 @@ export class sql_util {
     });
   }
 
-  static async getAllUser(con: mysql.Connection): Promise<{ uuid: number; id: string }[]> {
+  static async getAllUser(
+    con: mysql.Connection,
+  ): Promise<{ uuid: number; id: string }[]> {
     return new Promise((resolve, reject) => {
       const query = `
         SELECT uuid, id FROM user;
       `;
-  
+
       con.query(query, (error, results) => {
         if (error) {
           reject(error);
         } else {
           const rows = results as mysql.RowDataPacket[];
-          resolve(BASIC_INFO.SUCCESS_MSG("members",rows.map((row) => ({ uuid: row.uuid, id: row.id }))));
+          resolve(
+            BASIC_INFO.SUCCESS_MSG(
+              "members",
+              rows.map((row) => ({ uuid: row.uuid, id: row.id })),
+            ),
+          );
         }
       });
     });
@@ -197,35 +204,29 @@ export class sql_util {
     `;
 
     return new Promise((resolve, reject) => {
-      con.query(
-        query,
-        [name, provider, role, channel],
-        (error, results) => {
-          if (error) {
-            resolve(BASIC_INFO.FAILED_MSG("message", error));
-          } else {
-            resolve(BASIC_INFO.SUCCESS_MSG());
-          }
-        },
-      );
+      con.query(query, [name, provider, role, channel], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error));
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG());
+        }
+      });
     });
   }
 
-  static async getGroups(
-    con: mysql.Connection
-  ): Promise<RESPONSE_MSG_TYPE> {
+  static async getGroups(con: mysql.Connection): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT id, name 
       FROM \`group\`
     `;
-  
+
     return new Promise((resolve, reject) => {
       con.query(query, (error, results) => {
         if (error) {
           resolve(BASIC_INFO.FAILED_MSG("message", error.message));
         } else {
           const rows = results as mysql.RowDataPacket[];
-          const groupIds = rows.map(row => ({id:row.id,name:row.name}));
+          const groupIds = rows.map((row) => ({ id: row.id, name: row.name }));
           const res = BASIC_INFO.SUCCESS_MSG();
           res.groups = groupIds;
           resolve(res);
@@ -304,7 +305,7 @@ export class sql_util {
       INSERT INTO group_member (user_id, group_id)
       VALUES (?, ?)
     `;
-    console.log("sql-addmember",user_id, group_id);
+    console.log("sql-addmember", user_id, group_id);
     return new Promise((resolve, _) => {
       con.query(query, [user_id, group_id], (error, results) => {
         if (error) {
@@ -318,7 +319,7 @@ export class sql_util {
 
   static async getGroupMembers(
     con: mysql.Connection,
-    group_name: string
+    group_name: string,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT u.id, u.uuid 
@@ -327,7 +328,7 @@ export class sql_util {
       JOIN \`group\` g ON gm.group_id = g.id
       WHERE g.id = ?
     `;
-  
+
     return new Promise((resolve, reject) => {
       con.query(query, [group_name], (error, results) => {
         if (error) {
@@ -337,17 +338,15 @@ export class sql_util {
 
           const members = rows.map((row) => ({
             uuid: row.uuid,
-            id: row.id
+            id: row.id,
           }));
           const res = BASIC_INFO.SUCCESS_MSG();
           res.members = members;
           resolve(res);
-          
         }
       });
     });
   }
-  
 
   static async getUserGroups(
     con: mysql.Connection,
@@ -359,18 +358,17 @@ export class sql_util {
       JOIN \`group\` g ON gm.group_id = g.id
       WHERE gm.user_id = ?
     `;
-  
+
     return new Promise((resolve, reject) => {
       con.query(query, [userId], (error, results) => {
         if (error) {
           resolve(BASIC_INFO.FAILED_MSG("message", error.message));
         } else {
           const rows = results as mysql.RowDataPacket[];
-          const groupNames = rows.map(row => row.name);
+          const groupNames = rows.map((row) => row.name);
           const res = BASIC_INFO.SUCCESS_MSG();
           res.groupNames = groupNames;
           resolve(res);
-
         }
       });
     });

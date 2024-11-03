@@ -31,7 +31,6 @@ export const send = async (req: Request, res: Response) => {
     provider,
   );
 
-
   const p = BASIC_INFO.PROVIDER;
   switch (provider) {
     case p.DISCORD:

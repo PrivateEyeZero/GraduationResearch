@@ -13,7 +13,7 @@ export const add_group = async (req: Request, res: Response) => {
   console.log(session_id);
 
   const uuid = Session.getSessionUser(session_id);
-  console.log("add_group user: ",uuid);
+  console.log("add_group user: ", uuid);
   if (uuid === null) {
     res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.INVALID_SESSION_MSG));
     return;
@@ -40,10 +40,23 @@ export const add_group = async (req: Request, res: Response) => {
     return;
   }
 
-  const group_role =await DiscordUtil.createRole(discord.getGuild(), group_name);
-  if(!group_role){res.send(BASIC_INFO.FAILED_MSG("message", "error: cannnot create role"));return}
-  const group_channel = await DiscordUtil.createChannel(discord.getGuild(), group_name, [group_role]);
-  if(!group_channel){res.send(BASIC_INFO.FAILED_MSG("message", "error: cannot create channel"));return}
+  const group_role = await DiscordUtil.createRole(
+    discord.getGuild(),
+    group_name,
+  );
+  if (!group_role) {
+    res.send(BASIC_INFO.FAILED_MSG("message", "error: cannnot create role"));
+    return;
+  }
+  const group_channel = await DiscordUtil.createChannel(
+    discord.getGuild(),
+    group_name,
+    [group_role],
+  );
+  if (!group_channel) {
+    res.send(BASIC_INFO.FAILED_MSG("message", "error: cannot create channel"));
+    return;
+  }
   const discord_result = await sql_util.addGroup(
     sql.getConnection(),
     BASIC_INFO.PROVIDER.DISCORD,
@@ -51,7 +64,6 @@ export const add_group = async (req: Request, res: Response) => {
     BigInt(group_role),
     BigInt(group_channel),
   );
-
 
   if (discord_result.result === "success")
     DiscordUtil.sendLog(

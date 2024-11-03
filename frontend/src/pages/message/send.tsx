@@ -40,20 +40,22 @@ const SendMessage = () => {
         router.push(INVALID_SESSION_PAGE);
       }
       try {
-        const data = await (await fetch(groupUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ session_id }),
-        })).json();
+        const data = await (
+          await fetch(groupUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ session_id }),
+          })
+        ).json();
         if (data.message === INVALID_SESSION_MSG)
           router.push(INVALID_SESSION_PAGE);
 
-        const options = [PROVIDER.DISCORD,PROVIDER.TEAMS,PROVIDER.LINE];
+        const options = [PROVIDER.DISCORD, PROVIDER.TEAMS, PROVIDER.LINE];
         setProviderOptions(options);
-        console.log(data)
-        console.log(data.groups)
+        console.log(data);
+        console.log(data.groups);
         setGroups(data.groups);
 
         console.log(groups);
@@ -130,7 +132,7 @@ const SendMessage = () => {
         <FormLabel>グループ選択</FormLabel>
         <Select value={selectedGroup} onChange={handleGroupChange}>
           <option value="">グループを選択してください</option>
-          {provider && groups? (
+          {provider && groups ? (
             groups.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name}

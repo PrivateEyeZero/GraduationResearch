@@ -80,7 +80,7 @@ export const discord_callback = async (req: Request, res: Response) => {
     );
 
     const userId = userResponse.data;
-    console.log("discord-auth user-data",userResponse)
+    console.log("discord-auth user-data", userResponse);
     const con = sql.getConnection();
 
     await sql_util.updateIntegration(con, uuid, userId.id);

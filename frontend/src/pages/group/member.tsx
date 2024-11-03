@@ -24,7 +24,10 @@ const groupUrl = BACKEND_URL + "/group/get_groups";
 const getMembersUrl = BACKEND_URL + "/group/member/get";
 const addMembersUrl = BACKEND_URL + "/group/member/add";
 
-interface Member { id: string; uuid: string }
+interface Member {
+  id: string;
+  uuid: string;
+}
 
 const RoleFormWithMembers: React.FC = () => {
   const [groupName, setGroupName] = useState<string>("");
@@ -76,7 +79,7 @@ const RoleFormWithMembers: React.FC = () => {
         },
         body: JSON.stringify({ session_id, group_id: groupId }),
       });
-      console.log(response_gr)
+      console.log(response_gr);
       const response_all = await fetch(getMembersUrl, {
         method: "POST",
         headers: {
@@ -86,16 +89,23 @@ const RoleFormWithMembers: React.FC = () => {
       });
       const data_gr = await response_gr.json();
       const data_all = await response_all.json();
-      console.log(data_gr)
-      console.log(data_all)
+      console.log(data_gr);
+      console.log(data_all);
       if (data_gr.result === "success" && data_all.result === "success") {
         const group_members = data_gr.members || [];
-        const group_members_uuids = group_members.map((member: Member) => member.uuid);
+        const group_members_uuids = group_members.map(
+          (member: Member) => member.uuid,
+        );
         const all_members = data_all.members || [];
-        const non_members = all_members.filter((member: Member) => group_members_uuids.indexOf(member.uuid)==-1);
+        const non_members = all_members.filter(
+          (member: Member) => group_members_uuids.indexOf(member.uuid) == -1,
+        );
         setMembers(data_gr.members || []);
         setNonMembers(non_members);
-      } else if (data_gr.message === INVALID_SESSION_MSG || data_all.message === INVALID_SESSION_MSG) {
+      } else if (
+        data_gr.message === INVALID_SESSION_MSG ||
+        data_all.message === INVALID_SESSION_MSG
+      ) {
         router.push(INVALID_SESSION_PAGE);
       }
     } catch (error) {
@@ -120,38 +130,48 @@ const RoleFormWithMembers: React.FC = () => {
     setSearchTerm("");
   };
 
-  const filteredNonMembers = nonMembers.filter(member =>
-    member.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredNonMembers = nonMembers.filter((member) =>
+    member.id.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleAddMember = async (uuid: string) => {
     console.log("Add member with uuid:", uuid);
 
-    try{
+    try {
       const response = await fetch(addMembersUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({session_id:session_id, group_id: selectedGroup, uuid: uuid }),
+        body: JSON.stringify({
+          session_id: session_id,
+          group_id: selectedGroup,
+          uuid: uuid,
+        }),
       });
-      console.log(response)
-      const memberToAdd = nonMembers.find(member => member.uuid === uuid);
+      console.log(response);
+      const memberToAdd = nonMembers.find((member) => member.uuid === uuid);
       if (memberToAdd) {
-          setMembers(prevMembers => [...prevMembers, memberToAdd]);
-          setNonMembers(prevNonMembers => prevNonMembers.filter(member => member.uuid !== uuid));
+        setMembers((prevMembers) => [...prevMembers, memberToAdd]);
+        setNonMembers((prevNonMembers) =>
+          prevNonMembers.filter((member) => member.uuid !== uuid),
+        );
       }
-    }catch(error){
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
-  }
+  };
 
   return (
     <VStack spacing={4} align="stretch">
       {/* グループ選択ドロップダウン */}
       <FormControl id="groupSelect" isRequired>
         <FormLabel>グループを選択:</FormLabel>
-        <Select placeholder="グループを選択" onChange={handleGroupChange} value={selectedGroup || ""}>
+        <Select
+          placeholder="グループを選択"
+          onChange={handleGroupChange}
+          value={selectedGroup || ""}
+        >
           {groups.map((group) => (
             <option key={group.id} value={group.id}>
               {group.name}
@@ -162,16 +182,18 @@ const RoleFormWithMembers: React.FC = () => {
 
       {/* メンバー一覧の表示 */}
       {selectedGroup && (
-        <Box border="1px solid #ccc" borderRadius="md" p={4} width="99%" backgroundColor="#E8FFFA">
+        <Box
+          border="1px solid #ccc"
+          borderRadius="md"
+          p={4}
+          width="99%"
+          backgroundColor="#E8FFFA"
+        >
           <Box border="1px solid #ccc" backgroundColor="white">
             <FormLabel>メンバー一覧</FormLabel>
           </Box>
           {members.length > 0 ? (
-            members.map((member) => (
-              <Text key={member.uuid}>
-                {member.id}
-              </Text>
-            ))
+            members.map((member) => <Text key={member.uuid}>{member.id}</Text>)
           ) : (
             <Text>メンバーがいません</Text>
           )}
@@ -180,29 +202,57 @@ const RoleFormWithMembers: React.FC = () => {
 
       {/* 未参加メンバー一覧 */}
       {selectedGroup && (
-        <Box border="1px solid #ccc" borderRadius="md" p={4} width="99%" backgroundColor="#FFE5E5">
-          <Flex justify="space-between" align="center" mb={3} border="1px solid #ccc" backgroundColor="white">
+        <Box
+          border="1px solid #ccc"
+          borderRadius="md"
+          p={4}
+          width="99%"
+          backgroundColor="#FFE5E5"
+        >
+          <Flex
+            justify="space-between"
+            align="center"
+            mb={3}
+            border="1px solid #ccc"
+            backgroundColor="white"
+          >
             <Text fontSize="lg">未参加メンバー一覧</Text>
-            <Box display="flex">検索: 
-            <FormControl width="200px">
-              <Input
-                placeholder="検索..."
-                value={searchTerm}
-                onChange={handleSearchChange} 
-              />
-            </FormControl>
+            <Box display="flex">
+              検索:
+              <FormControl width="200px">
+                <Input
+                  placeholder="検索..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+              </FormControl>
             </Box>
           </Flex>
           <Divider />
           {filteredNonMembers.length > 0 ? (
             filteredNonMembers.map((member) => (
-              <Flex borderRadius="0.7em" backgroundColor="#FFFAE2" justify="space-between" marginTop="0.3em" display="flex" height="1.6em" alignItems="center"paddingLeft="0.7em" paddingRight="0.7em">
-              <Text key={member.uuid} padding="0px" margin="0px">
-                {member.id}
-              </Text>
-              <Button padding="0px" margin="0px" height="80%" onClick={()=>handleAddMember(member.uuid)}>
-                このユーザを追加
-              </Button>
+              <Flex
+                borderRadius="0.7em"
+                backgroundColor="#FFFAE2"
+                justify="space-between"
+                marginTop="0.3em"
+                display="flex"
+                height="1.6em"
+                alignItems="center"
+                paddingLeft="0.7em"
+                paddingRight="0.7em"
+              >
+                <Text key={member.uuid} padding="0px" margin="0px">
+                  {member.id}
+                </Text>
+                <Button
+                  padding="0px"
+                  margin="0px"
+                  height="80%"
+                  onClick={() => handleAddMember(member.uuid)}
+                >
+                  このユーザを追加
+                </Button>
               </Flex>
             ))
           ) : (
