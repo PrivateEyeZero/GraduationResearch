@@ -481,11 +481,39 @@ export class sql_util {
 
       con.query(query, (error, results) => {
         if (error) {
-          reject(error);
+          reject(BASIC_INFO.FAILED_MSG("message", error));
         } else {
-          resolve();
+          resolve(BASIC_INFO.SUCCESS_MSG());
         }
       });
+    });
+  }
+
+  static async addMessage(
+    con: mysql.Connection,
+    content: string,
+    sender: number,
+    status: 'user' | 'group',
+    user_id: number,
+    group_id: number,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        INSERT INTO message (content, sender, status, user_id, group_id)
+        VALUES (?, ?, ?, ?, ?);
+      `;
+  
+      con.query(
+        query,
+        [content, sender, status, user_id, group_id],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        }
+      );
     });
   }
 
