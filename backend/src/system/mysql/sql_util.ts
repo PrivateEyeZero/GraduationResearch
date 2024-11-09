@@ -493,7 +493,7 @@ export class sql_util {
     con: mysql.Connection,
     content: string,
     sender: number,
-    status: 'user' | 'group',
+    status: "user" | "group",
     user_id: number,
     group_id: number,
   ): Promise<void> {
@@ -502,7 +502,7 @@ export class sql_util {
         INSERT INTO message (content, sender, status, user_id, group_id)
         VALUES (?, ?, ?, ?, ?);
       `;
-  
+
       con.query(
         query,
         [content, sender, status, user_id, group_id],
@@ -512,7 +512,7 @@ export class sql_util {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
   }

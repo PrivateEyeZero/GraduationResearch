@@ -30,15 +30,19 @@ export const send = async (req: Request, res: Response) => {
     group_id,
     provider,
   );
-  const sendMessage = message + `\n\nsend by ${user.id}`
-  await sql_util.addMessage(sql.getConnection(), sendMessage, uuid, "group", -1, group_id);
+  const sendMessage = message + `\n\nsend by ${user.id}`;
+  await sql_util.addMessage(
+    sql.getConnection(),
+    sendMessage,
+    uuid,
+    "group",
+    -1,
+    group_id,
+  );
   const p = BASIC_INFO.PROVIDER;
   switch (provider) {
     case p.DISCORD:
-      DiscordUtil.sendMessage(
-        groupInfo?.channel as string,
-        sendMessage,
-      );
+      DiscordUtil.sendMessage(groupInfo?.channel as string, sendMessage);
       res.send(BASIC_INFO.SUCCESS_MSG());
       return;
     case p.TEAMS:
