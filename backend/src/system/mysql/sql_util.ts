@@ -473,7 +473,8 @@ export class sql_util {
           content TEXT NOT NULL,
           sender INT,
           status ENUM('user', 'group'),
-          receiver INT,
+          user_id INT,
+          group_id INT,
           FOREIGN KEY (sender) REFERENCES user(uuid) ON DELETE SET NULL
         );
       `;
