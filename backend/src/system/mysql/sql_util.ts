@@ -522,15 +522,17 @@ export class sql_util {
     con: mysql.Connection,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
-      const query = `CREATE TABLE IF NOT EXISTS response (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          user_id INT,
-          message_id INT,
-          safety BOOL NOT NULL,
-          comment TEXT,
-          FOREIGN KEY (user_id) REFERENCES user(uuid) ON DELETE SET NULL,
-          FOREIGN KEY (message_id) REFERENCES message(id) ON DELETE SET NULL
-        );
+      const query = `      
+        CREATE TABLE IF NOT EXISTS response (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT,
+        message_id INT,
+        safety BOOL NOT NULL,
+        comment TEXT,
+        FOREIGN KEY (user_id) REFERENCES user(uuid) ON DELETE SET NULL,
+        FOREIGN KEY (message_id) REFERENCES message(id) ON DELETE SET NULL,
+        UNIQUE KEY unique_user_message (user_id, message_id)
+      );
       `;
 
       con.query(query, (error, results) => {
@@ -538,6 +540,32 @@ export class sql_util {
           reject(error);
         } else {
           resolve();
+        }
+      });
+    });
+  }
+
+  static async addResponse(
+    con: mysql.Connection,
+    user_id: number,
+    message_id: number,
+    safety: boolean,
+    comment: string,
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      INSERT INTO response (user_id, message_id, safety, comment)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        safety = VALUES(safety),
+        comment = VALUES(comment)
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(query, [user_id, message_id, safety, comment], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG());
         }
       });
     });
