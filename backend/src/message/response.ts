@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import Session from "../system/session";
 import { sql_util } from "../system/mysql/sql_util";
-import { sql, discord } from "../server";
-import { DiscordUtil } from "../discord/discord_util";
-import { RESPONSE_MSG_TYPE } from "../basic_info";
+import { sql} from "../server";
 const BASIC_INFO = require("../basic_info.ts");
 
 export const postResponse = async (req: Request, res: Response) => {
@@ -27,13 +25,24 @@ export const postResponse = async (req: Request, res: Response) => {
 
 export const getResponse = async (req: Request, res: Response) => {
   const session_id = req.body.session_id as string;
-  const message_id = req.query.message_id as string;
+  const message_id = req.body.message_id as string;
   const uuid = Session.getSessionUser(session_id);
   if (uuid === null) {
     res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.INVALID_SESSION_MSG));
     return;
   }
-
+  
   const responses = await sql_util.getResponse(sql.getConnection(), parseInt(message_id));
-  res.send(responses);
+  
+  const renamed_responses = await Promise.all(
+    responses.res.map(async (response: any) => {
+      response.user = (
+        await sql_util.getUser(sql.getConnection(), parseInt(response.user))
+      ).id as string;
+      response.safety = response.safety == 1;
+      return response;
+    }),
+  );
+  
+  res.send(BASIC_INFO.SUCCESS_MSG("response",renamed_responses));
 };

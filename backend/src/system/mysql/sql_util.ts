@@ -51,7 +51,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       con.query(query, [id, pass], (error, results) => {
         if (error) {
-          console.log(error);
+          
 
           if (error.code === "ER_DUP_ENTRY") {
             resolve(
@@ -295,7 +295,7 @@ export class sql_util {
       INSERT INTO group_member (user_id, group_id)
       VALUES (?, ?)
     `;
-    console.log("sql-addmember", user_id, group_id);
+    
     return new Promise((resolve, _) => {
       con.query(query, [user_id, group_id], (error, results) => {
         if (error) {
@@ -693,24 +693,23 @@ export class sql_util {
     message_id: number
   ): Promise<any> {
     const query = `
-      SELECT user_id AS uuid, safety, comment
+      SELECT user_id, safety, comment
       FROM response
       WHERE message_id = ?
     `;
-  
+    message_id = isNaN(message_id) ? -1 : message_id;
     return new Promise((resolve, reject) => {
       con.query(query, [message_id], (error, results) => {
         if (error) {
           reject(BASIC_INFO.FAILED_MSG("message", error.message));
         } else {
-          results = results as mysql.RowDataPacket[];
-          const responseData = results.map(row => ({
-            uuid: row.uuid,
+
+          const responseData = (results as mysql.RowDataPacket[]).map((row: any) => ({
+            user: row.user_id,
             safety: row.safety,
             comment: row.comment
           }));
-  
-          resolve(BASIC_INFO.SUCCESS_MSG({ response: responseData }));
+          resolve(BASIC_INFO.SUCCESS_MSG( "res", responseData ));
         }
       });
     });
