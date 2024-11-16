@@ -6,7 +6,7 @@ import { DiscordUtil } from "../discord/discord_util";
 import { RESPONSE_MSG_TYPE } from "../basic_info";
 const BASIC_INFO = require("../basic_info.ts");
 
-export const response = async (req: Request, res: Response) => {
+export const postResponse = async (req: Request, res: Response) => {
   const session_id = req.body.session_id as string;
   const message_id = req.body.message_id as number;
   const safety = req.body.safety as boolean;
@@ -22,3 +22,5 @@ export const response = async (req: Request, res: Response) => {
   sql_util.addResponse(sql.getConnection(),uuid, message_id, safety, content);
   res.send(BASIC_INFO.SUCCESS_MSG());
 };
+
+

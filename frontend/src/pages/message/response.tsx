@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Session } from "@/_util/session";
-import { BACKEND_URL, INVALID_SESSION_PAGE } from "@/basic_info";
+import { BACKEND_URL, INVALID_SESSION_MSG, INVALID_SESSION_PAGE } from "@/basic_info";
 import {
   Box,
   Heading,
@@ -12,7 +12,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 
-const responseUrl = BACKEND_URL + "/message/response";
+const responseUrl = BACKEND_URL + "/message/response/post";
 
 const SafetyResponse = () => {
   const router = useRouter();
@@ -48,6 +48,9 @@ const SafetyResponse = () => {
           body: JSON.stringify({ session_id: session_id, message_id: messageId, safety: safetyStatus, content: message }),
         })
       ).json();
+      if (data.result === "failed" &&data.message === INVALID_SESSION_MSG) {
+        router.push(INVALID_SESSION_PAGE);
+      }
     }catch(e){
       console.log(e);
     }

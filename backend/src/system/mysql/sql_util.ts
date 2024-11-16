@@ -12,6 +12,7 @@ export class sql_util {
     await sql_util.createIntegrationTableIfNotExists(con);
     await sql_util.createGroupTableIfNotExists(con);
     await sql_util.createGroupMemberTableIfNotExists(con);
+    await sql_util.createGroupProviderTableIfNotExists(con);
     await sql_util.createMessageTableIfNotExists(con);
     await sql_util.createResponseTableIfNotExists(con);
   }
@@ -172,7 +173,7 @@ export class sql_util {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
-        CREATE TABLE \`group\` (
+        CREATE TABLE IF NOT EXISTS \`group\` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(32) NOT NULL UNIQUE
         );
@@ -227,6 +228,32 @@ export class sql_util {
           const res = BASIC_INFO.SUCCESS_MSG();
           res.groups = groupIds;
           resolve(res);
+        }
+      });
+    });
+  }
+
+  static async getGroupName(con: mysql.Connection, group_id: number): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      SELECT name 
+      FROM \`group\` 
+      WHERE id = ?;
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(query, [group_id], (error, results) => {
+        results = results as mysql.RowDataPacket[];
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("getGroupName", error.message));
+        } else {
+          if (results.length === 0) {
+            resolve(BASIC_INFO.FAILED_MSG("getGroupName", "Group not found"));
+          } else {
+            const groupName = results[0].name;
+            const res = BASIC_INFO.SUCCESS_MSG();
+            res.group_name = groupName;
+            resolve(res);
+          }
         }
       });
     });
@@ -340,7 +367,7 @@ export class sql_util {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `      
-        CREATE TABLE group_provider (
+        CREATE TABLE IF NOT EXISTS group_provider (
           id INT AUTO_INCREMENT PRIMARY KEY,
           group_id INT NOT NULL,
           provider VARCHAR(32) NOT NULL,
@@ -563,6 +590,37 @@ export class sql_util {
           }
         },
       );
+    });
+  }
+
+  static async getAllMessages(con: mysql.Connection): Promise<RESPONSE_MSG_TYPE> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT 
+          id AS message_id, 
+          content, 
+          sender, 
+          status, 
+          user_id, 
+          group_id 
+        FROM message;
+      `;
+  
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(BASIC_INFO.FAILED_MSG("message", error));
+        } else {
+          const messages = (results as mysql.RowDataPacket[]).map((row: any) => ({
+            message_id: row.message_id,
+            content: row.content,
+            sender: row.sender,
+            status: row.status,
+            user: row.user_id,
+            group: row.group_id,
+          }));
+          resolve(BASIC_INFO.SUCCESS_MSG("data", messages));
+        }
+      });
     });
   }
 

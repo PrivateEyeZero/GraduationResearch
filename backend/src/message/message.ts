@@ -1,8 +1,10 @@
 import express from "express";
 import { send } from "./send";
-import {response} from "./response";
+import {postResponse} from "./response";
+import { getMessages } from "./get";
 const router = express.Router();
 router.use(express.json());
 router.post("/send", send);
-router.post("/response", response);
+router.post("/response/post", postResponse);
+router.post("/get", getMessages);
 export default router;
