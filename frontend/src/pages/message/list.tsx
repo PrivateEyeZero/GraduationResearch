@@ -46,7 +46,6 @@ const colors = {
 const MessageList = () => {
   const [messages, setMessages] = useState<MESSAGE_LIST_TYPE[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
   const router = useRouter();
 
@@ -87,10 +86,6 @@ const MessageList = () => {
     router.push(`/message/check_response?message_id=${message_id}`);
   };
 
-  const handleShowFullMessage = (message: string) => {
-    setSelectedMessage(message);
-    onOpen();
-  };
 
   if (loading) {
     return (
@@ -156,7 +151,6 @@ const MessageList = () => {
                 overflow="hidden"
                 textOverflow="ellipsis"
                 cursor="pointer"
-                onClick={() => handleShowFullMessage(message.content)}
                 title={message.content}
               >
                 {message.content
