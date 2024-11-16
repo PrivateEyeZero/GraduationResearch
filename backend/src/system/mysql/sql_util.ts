@@ -687,4 +687,32 @@ export class sql_util {
       );
     });
   }
+
+  static async getResponse(
+    con: mysql.Connection,
+    message_id: number
+  ): Promise<any> {
+    const query = `
+      SELECT user_id AS uuid, safety, comment
+      FROM response
+      WHERE message_id = ?
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(query, [message_id], (error, results) => {
+        if (error) {
+          reject(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          results = results as mysql.RowDataPacket[];
+          const responseData = results.map(row => ({
+            uuid: row.uuid,
+            safety: row.safety,
+            comment: row.comment
+          }));
+  
+          resolve(BASIC_INFO.SUCCESS_MSG({ response: responseData }));
+        }
+      });
+    });
+  }
 }

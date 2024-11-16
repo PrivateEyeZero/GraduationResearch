@@ -24,3 +24,16 @@ export const postResponse = async (req: Request, res: Response) => {
   sql_util.addResponse(sql.getConnection(), uuid, message_id, safety, content);
   res.send(BASIC_INFO.SUCCESS_MSG());
 };
+
+export const getResponse = async (req: Request, res: Response) => {
+  const session_id = req.body.session_id as string;
+  const message_id = req.query.message_id as string;
+  const uuid = Session.getSessionUser(session_id);
+  if (uuid === null) {
+    res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.INVALID_SESSION_MSG));
+    return;
+  }
+
+  const responses = await sql_util.getResponse(sql.getConnection(), parseInt(message_id));
+  res.send(responses);
+};
