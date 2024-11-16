@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Table,
-  TableContainer,
   Thead,
   Tbody,
   Tr,
@@ -11,13 +10,6 @@ import {
   Td,
   Spinner,
   Text,
-  useBreakpointValue,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
   useDisclosure,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
@@ -27,7 +19,6 @@ import {
   INVALID_SESSION_MSG,
   INVALID_SESSION_PAGE,
 } from "@/basic_info";
-import { m } from "framer-motion";
 
 const messagesUrl = BACKEND_URL + "/message/get";
 
