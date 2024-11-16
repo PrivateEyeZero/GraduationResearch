@@ -57,12 +57,21 @@ export const add_group = async (req: Request, res: Response) => {
     res.send(BASIC_INFO.FAILED_MSG("message", "error: cannot create channel"));
     return;
   }
-  const discord_result = await sql_util.addGroup(
+
+  const group_create_res = await sql_util.addGroup(
     sql.getConnection(),
+    group_name
+  )
+  if (group_create_res.result === "failed") {
+    res.send(group_create_res);
+    return;
+  }
+  const discord_result = await sql_util.addGroupProvider(
+    sql.getConnection(),
+    parseInt(group_create_res.group_id as string),
     BASIC_INFO.PROVIDER.DISCORD,
-    group_name,
-    BigInt(group_role),
-    BigInt(group_channel),
+    group_role,
+    group_channel
   );
 
   if (discord_result.result === "success")

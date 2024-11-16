@@ -25,7 +25,7 @@ export const send = async (req: Request, res: Response) => {
     uuid,
   );
 
-  const groupInfo = await sql_util.getGroupsInfo(
+  const groupInfo = await sql_util.getGroupProviderInfo(
     sql.getConnection(),
     group_id,
     provider,

@@ -172,12 +172,9 @@ export class sql_util {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
-        CREATE TABLE IF NOT EXISTS \`group\` (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          name VARCHAR(32) NOT NULL UNIQUE,
-          provider VARCHAR(32) NOT NULL,
-          role TEXT,
-          channel TEXT
+        CREATE TABLE \`group\` (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(32) NOT NULL UNIQUE
         );
       `;
 
@@ -193,22 +190,22 @@ export class sql_util {
 
   static async addGroup(
     con: mysql.Connection,
-    provider: string,
     name: string,
-    role: bigint,
-    channel: bigint,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
-      INSERT INTO \`group\` (name, provider, role, channel)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO \`group\` (name)
+      VALUES (?)
     `;
 
     return new Promise((resolve, reject) => {
-      con.query(query, [name, provider, role, channel], (error, results) => {
+      con.query(query, [name], (error, results) => {
         if (error) {
           resolve(BASIC_INFO.FAILED_MSG("message", error));
         } else {
-          resolve(BASIC_INFO.SUCCESS_MSG());
+          const groupId = (results as mysql.OkPacket).insertId;
+          const response = BASIC_INFO.SUCCESS_MSG();
+          response.group_id = groupId;
+          resolve(response);
         }
       });
     });
@@ -230,43 +227,6 @@ export class sql_util {
           const res = BASIC_INFO.SUCCESS_MSG();
           res.groups = groupIds;
           resolve(res);
-        }
-      });
-    });
-  }
-
-  static async getGroupsInfo(
-    con: mysql.Connection,
-    group_id: number,
-    provider: string,
-  ): Promise<RESPONSE_MSG_TYPE> {
-    const query = `
-      SELECT id, name, provider, role, channel 
-      FROM \`group\`
-      WHERE id = ? AND provider = ?
-    `;
-
-    return new Promise((resolve, reject) => {
-      con.query(query, [group_id, provider], (error, results) => {
-        if (error) {
-          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
-        } else {
-          const rows = results as mysql.RowDataPacket[];
-          if (rows.length === 0) {
-            resolve(
-              BASIC_INFO.FAILED_MSG(
-                "message",
-                "指定されたグループは存在しません",
-              ),
-            );
-          } else {
-            console.log(rows[0].role);
-            const res = BASIC_INFO.SUCCESS_MSG();
-            res.role = rows[0].role;
-            res.channel = rows[0].channel;
-            console.log(res.role);
-            resolve(res);
-          }
         }
       });
     });
@@ -373,6 +333,95 @@ export class sql_util {
       });
     });
   }
+
+  //groupprovider-table
+    static async createGroupProviderTableIfNotExists(
+    con: mysql.Connection,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `      
+        CREATE TABLE group_provider (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          group_id INT NOT NULL,
+          provider VARCHAR(32) NOT NULL,
+          role TEXT,
+          channel TEXT,
+          FOREIGN KEY (group_id) REFERENCES \`group\`(id) ON DELETE CASCADE
+        );
+      `;
+
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  static async getGroupProviderInfo(
+    con: mysql.Connection,
+    group_id: number,
+    provider: string,
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+      SELECT gp.id, g.name, gp.provider, gp.role, gp.channel
+      FROM group_provider gp
+      JOIN \`group\` g ON gp.group_id = g.id
+      WHERE gp.group_id = ? AND gp.provider = ?
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(query, [group_id, provider], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("Error", error.message));
+        } else {
+          const rows = results as mysql.RowDataPacket[];
+          if (rows.length === 0) {
+            resolve(
+              BASIC_INFO.FAILED_MSG(
+                "Error",
+                "指定されたグループプロバイダは存在しません。",
+              ),
+            );
+          } else {
+            const row = rows[0];
+            const response = BASIC_INFO.SUCCESS_MSG();
+            response.role = row.role;
+            response.channel = row.channel;
+            resolve(response);
+          }
+        }
+      });
+    });
+  }
+
+  static async addGroupProvider(
+    con: mysql.Connection,
+    groupId: number,
+    provider: string,
+    role: string | null = null,
+    channel: string | null = null
+  ): Promise<RESPONSE_MSG_TYPE> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        INSERT INTO group_provider (group_id, provider, role, channel)
+        VALUES (?, ?, ?, ?);
+      `;
+  
+      const values = [groupId, provider, role, channel];
+  
+      con.query(query, values, (error, results) => {
+        if (error) {
+          reject(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG());
+        }
+      });
+    });
+  }
+  
 
   //Integration-table
   static async createIntegrationTableIfNotExists(
