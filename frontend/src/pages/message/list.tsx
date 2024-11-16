@@ -32,9 +32,9 @@ type MESSAGE_LIST_TYPE = {
 };
 
 const borders = {
-  lightGray: "1px solid #000", // Change border color to black
-  thickBlue: "2px solid #000", // Change to black
-  headerBorder: "3px solid #000", // Change to black
+  lightGray: "1px solid #000",
+  thickBlue: "2px solid #000",
+  headerBorder: "3px solid #000",
 };
 
 const colors = {
@@ -151,13 +151,13 @@ const MessageList = () => {
               <Td
                 borderBottom={borders.lightGray}
                 borderRight={borders.lightGray}
-                maxW="300px" // Restrict width
-                whiteSpace="pre-wrap" // Preserve newlines
+                maxW="300px"
+                whiteSpace="pre-wrap"
                 overflow="hidden"
                 textOverflow="ellipsis"
                 cursor="pointer"
-                onClick={() => handleShowFullMessage(message.content)} // Open full message on click
-                title={message.content} // Tooltip for full message
+                onClick={() => handleShowFullMessage(message.content)}
+                title={message.content}
               >
                 {message.content
                   .slice(0, 40)
