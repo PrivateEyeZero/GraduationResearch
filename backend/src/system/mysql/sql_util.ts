@@ -233,13 +233,16 @@ export class sql_util {
     });
   }
 
-  static async getGroupName(con: mysql.Connection, group_id: number): Promise<RESPONSE_MSG_TYPE> {
+  static async getGroupName(
+    con: mysql.Connection,
+    group_id: number,
+  ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT name 
       FROM \`group\` 
       WHERE id = ?;
     `;
-  
+
     return new Promise((resolve, reject) => {
       con.query(query, [group_id], (error, results) => {
         results = results as mysql.RowDataPacket[];
@@ -362,7 +365,7 @@ export class sql_util {
   }
 
   //groupprovider-table
-    static async createGroupProviderTableIfNotExists(
+  static async createGroupProviderTableIfNotExists(
     con: mysql.Connection,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -398,7 +401,7 @@ export class sql_util {
       JOIN \`group\` g ON gp.group_id = g.id
       WHERE gp.group_id = ? AND gp.provider = ?
     `;
-  
+
     return new Promise((resolve, reject) => {
       con.query(query, [group_id, provider], (error, results) => {
         if (error) {
@@ -429,16 +432,16 @@ export class sql_util {
     groupId: number,
     provider: string,
     role: string | null = null,
-    channel: string | null = null
+    channel: string | null = null,
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
         INSERT INTO group_provider (group_id, provider, role, channel)
         VALUES (?, ?, ?, ?);
       `;
-  
+
       const values = [groupId, provider, role, channel];
-  
+
       con.query(query, values, (error, results) => {
         if (error) {
           reject(BASIC_INFO.FAILED_MSG("message", error.message));
@@ -448,7 +451,6 @@ export class sql_util {
       });
     });
   }
-  
 
   //Integration-table
   static async createIntegrationTableIfNotExists(
@@ -593,7 +595,9 @@ export class sql_util {
     });
   }
 
-  static async getAllMessages(con: mysql.Connection): Promise<RESPONSE_MSG_TYPE> {
+  static async getAllMessages(
+    con: mysql.Connection,
+  ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
         SELECT 
@@ -605,19 +609,21 @@ export class sql_util {
           group_id 
         FROM message;
       `;
-  
+
       con.query(query, (error, results) => {
         if (error) {
           reject(BASIC_INFO.FAILED_MSG("message", error));
         } else {
-          const messages = (results as mysql.RowDataPacket[]).map((row: any) => ({
-            message_id: row.message_id,
-            content: row.content,
-            sender: row.sender,
-            status: row.status,
-            user: row.user_id,
-            group: row.group_id,
-          }));
+          const messages = (results as mysql.RowDataPacket[]).map(
+            (row: any) => ({
+              message_id: row.message_id,
+              content: row.content,
+              sender: row.sender,
+              status: row.status,
+              user: row.user_id,
+              group: row.group_id,
+            }),
+          );
           resolve(BASIC_INFO.SUCCESS_MSG("data", messages));
         }
       });
@@ -666,15 +672,19 @@ export class sql_util {
         safety = VALUES(safety),
         comment = VALUES(comment)
     `;
-  
+
     return new Promise((resolve, reject) => {
-      con.query(query, [user_id, message_id, safety, comment], (error, results) => {
-        if (error) {
-          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
-        } else {
-          resolve(BASIC_INFO.SUCCESS_MSG());
-        }
-      });
+      con.query(
+        query,
+        [user_id, message_id, safety, comment],
+        (error, results) => {
+          if (error) {
+            resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+          } else {
+            resolve(BASIC_INFO.SUCCESS_MSG());
+          }
+        },
+      );
     });
   }
 }

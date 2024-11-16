@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Session } from "@/_util/session";
-import { BACKEND_URL, INVALID_SESSION_MSG, INVALID_SESSION_PAGE } from "@/basic_info";
+import {
+  BACKEND_URL,
+  INVALID_SESSION_MSG,
+  INVALID_SESSION_PAGE,
+} from "@/basic_info";
 import {
   Box,
   Heading,
@@ -38,20 +42,25 @@ const SafetyResponse = () => {
     if (session_id === null) {
       router.push(INVALID_SESSION_PAGE);
     }
-    try{
+    try {
       const data = await (
         await fetch(responseUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ session_id: session_id, message_id: messageId, safety: safetyStatus, content: message }),
+          body: JSON.stringify({
+            session_id: session_id,
+            message_id: messageId,
+            safety: safetyStatus,
+            content: message,
+          }),
         })
       ).json();
-      if (data.result === "failed" &&data.message === INVALID_SESSION_MSG) {
+      if (data.result === "failed" && data.message === INVALID_SESSION_MSG) {
         router.push(INVALID_SESSION_PAGE);
       }
-    }catch(e){
+    } catch (e) {
       console.log(e);
     }
   };

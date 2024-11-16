@@ -18,9 +18,9 @@ export const postResponse = async (req: Request, res: Response) => {
     return;
   }
 
-  console.log(`uuid: ${uuid}, message_id: ${message_id}, safety: ${safety}, content: ${content}`);
-  sql_util.addResponse(sql.getConnection(),uuid, message_id, safety, content);
+  console.log(
+    `uuid: ${uuid}, message_id: ${message_id}, safety: ${safety}, content: ${content}`,
+  );
+  sql_util.addResponse(sql.getConnection(), uuid, message_id, safety, content);
   res.send(BASIC_INFO.SUCCESS_MSG());
 };
-
-
