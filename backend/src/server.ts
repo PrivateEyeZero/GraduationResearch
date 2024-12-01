@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import authRouter from "./auth/auth";
 import groupRouter from "./group/group";
 import messageRouter from "./message/message";
+import lineRouter from "./line/line";
 import path from "path";
 import { SQL } from "./system/mysql/sql";
 import { sql_util } from "./system/mysql/sql_util";
@@ -24,6 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/auth", authRouter);
 app.use("/group", groupRouter);
 app.use("/message", messageRouter);
+app.use("/line", lineRouter);
 
 const server = http.createServer(app);
 server.listen(BASIC_INFO.PORT, () => {
@@ -42,4 +44,10 @@ sql_util.createAllTablesIfNotExists(sql.getConnection());
 
 const discord = new Discord();
 
-export { app, server, sql, discord };
+const line = {
+  channelId: process.env.LINE_CHANNEL_ID,
+  channelSecret: process.env.LINE_CHANNEL_SECRET,
+  accessToken: process.env.LINE_ACCESS_TOKEN,
+}
+
+export { app, server, sql, discord, line };
