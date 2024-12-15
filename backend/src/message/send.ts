@@ -30,15 +30,17 @@ export const send = async (req: Request, res: Response) => {
     group_id,
     provider,
   );
-  const sendMessage = message + `\n\nsend by ${user.id}`;
-  await sql_util.addMessage(
+  let sendMessage = message + `\n\nsend by ${user.id}`;
+  const id = (await sql_util.addMessage(
     sql.getConnection(),
     sendMessage,
     uuid,
     "group",
     -1,
     group_id,
-  );
+  )).id;
+  console.log(BASIC_INFO)
+  sendMessage += `\n安否応答: ${BASIC_INFO.FRONT_URL}/message/response?message_id=${id}`;
   const p = BASIC_INFO.PROVIDER;
   switch (provider) {
     case p.DISCORD:

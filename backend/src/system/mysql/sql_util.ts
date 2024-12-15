@@ -574,7 +574,7 @@ export class sql_util {
     status: "user" | "group",
     user_id: number,
     group_id: number,
-  ): Promise<void> {
+  ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
         INSERT INTO message (content, sender, status, user_id, group_id)
@@ -584,11 +584,12 @@ export class sql_util {
       con.query(
         query,
         [content, sender, status, user_id, group_id],
-        (error, results) => {
+        (error, results: any) => {
+          
           if (error) {
             reject(error);
           } else {
-            resolve();
+            resolve(BASIC_INFO.SUCCESS_MSG("id", results.insertId));
           }
         },
       );

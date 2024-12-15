@@ -1,5 +1,8 @@
-const PORT = "8080";
-const SERVER_URL = "http://localhost:" + PORT;
+const BACK_PORT = "8080";
+const FRONT_PORT = "3000";
+const SERVER_URL = "http://localhost:" + BACK_PORT;
+const FRONT_URL = "http://localhost:" + FRONT_PORT;
+
 const ENV_PATH = "data/.env";
 
 const LOCAL_AUTH_URL = "http://localhost:3000/debug";
@@ -7,7 +10,7 @@ const LOCAL_AUTH_URL = "http://localhost:3000/debug";
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_AUTH_REDIRECT_URI =
-  "http://localhost:" + PORT + "/auth/discord/callback";
+  "http://localhost:" + BACK_PORT + "/auth/discord/callback";
 
 //Response
 export type RESPONSE_MSG_TYPE = {
@@ -42,8 +45,9 @@ enum PROVIDER {
 
 module.exports = {
   //System
-  PORT,
+  PORT: BACK_PORT,
   SERVER_URL,
+  FRONT_URL,
   ENV_PATH,
   //Auth
   LOCAL_AUTH_URL,
