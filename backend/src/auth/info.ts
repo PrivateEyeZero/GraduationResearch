@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { sql_util } from "../system/mysql/sql_util";
 import { sql, discord } from "../server";
-import { DiscordUtil } from "../discord/discord_util";
+import { DiscordUtil } from "../discord/util";
 import Session from "../system/session";
 
 const BASIC_INFO = require("../basic_info.ts");

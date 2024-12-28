@@ -2,8 +2,9 @@ import { Request, Response } from "express";
 import Session from "../system/session";
 import { sql_util } from "../system/mysql/sql_util";
 import { sql, discord } from "../server";
-import { DiscordUtil } from "../discord/discord_util";
+import { DiscordUtil } from "../discord/util";
 import { RESPONSE_MSG_TYPE } from "../basic_info";
+import { Line } from "../line/util";
 const BASIC_INFO = require("../basic_info.ts");
 
 export const send = async (req: Request, res: Response) => {
@@ -55,7 +56,8 @@ export const send = async (req: Request, res: Response) => {
         case PROVIDER.TEAMS:
           return;
         case PROVIDER.LINE:
-          console.log("tet");
+          Line.sendMessage(sendMessage)
+          console.log("line");
           return;
         default:
           res_code = 400;
