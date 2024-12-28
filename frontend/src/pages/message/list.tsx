@@ -26,9 +26,8 @@ type MESSAGE_LIST_TYPE = {
   message_id: string;
   content: string;
   sender: string;
-  status: string;
-  user: string;
-  group: string;
+  users: string[];
+  groups: string[];
 };
 
 const borders = {
@@ -85,7 +84,6 @@ const MessageList = () => {
   const handleViewResponse = (message_id: string) => {
     router.push(`/message/check_response?message_id=${message_id}`);
   };
-
 
   if (loading) {
     return (
@@ -169,7 +167,8 @@ const MessageList = () => {
                 borderBottom={borders.lightGray}
                 borderRight={borders.lightGray}
               >
-                {message.group ? message.group : message.user}
+                {message.groups}
+                {message.users}
               </Td>
               <Td borderBottom={borders.lightGray}>
                 <Button

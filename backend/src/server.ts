@@ -48,6 +48,6 @@ const line = {
   channelId: process.env.LINE_CHANNEL_ID,
   channelSecret: process.env.LINE_CHANNEL_SECRET,
   accessToken: process.env.LINE_ACCESS_TOKEN,
-}
+};
 
 export { app, server, sql, discord, line };

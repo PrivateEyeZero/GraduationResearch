@@ -14,6 +14,7 @@ export class sql_util {
     await sql_util.createGroupMemberTableIfNotExists(con);
     await sql_util.createGroupProviderTableIfNotExists(con);
     await sql_util.createMessageTableIfNotExists(con);
+    await sql_util.createMessageTargetTableIfNotExists(con);
     await sql_util.createResponseTableIfNotExists(con);
   }
   static async createUserTableIfNotExists(
@@ -51,8 +52,6 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       con.query(query, [id, pass], (error, results) => {
         if (error) {
-          
-
           if (error.code === "ER_DUP_ENTRY") {
             resolve(
               BASIC_INFO.FAILED_MSG("message", "IDが既に登録されています"),
@@ -295,7 +294,7 @@ export class sql_util {
       INSERT INTO group_member (user_id, group_id)
       VALUES (?, ?)
     `;
-    
+
     return new Promise((resolve, _) => {
       con.query(query, [user_id, group_id], (error, results) => {
         if (error) {
@@ -550,9 +549,6 @@ export class sql_util {
           id INT AUTO_INCREMENT PRIMARY KEY,
           content TEXT NOT NULL,
           sender INT,
-          status ENUM('user', 'group'),
-          user_id INT,
-          group_id INT,
           FOREIGN KEY (sender) REFERENCES user(uuid) ON DELETE SET NULL
         );
       `;
@@ -571,28 +567,20 @@ export class sql_util {
     con: mysql.Connection,
     content: string,
     sender: number,
-    status: "user" | "group",
-    user_id: number,
-    group_id: number,
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
-        INSERT INTO message (content, sender, status, user_id, group_id)
-        VALUES (?, ?, ?, ?, ?);
+        INSERT INTO message (content, sender)
+        VALUES (?, ?);
       `;
 
-      con.query(
-        query,
-        [content, sender, status, user_id, group_id],
-        (error, results: any) => {
-          
-          if (error) {
-            reject(error);
-          } else {
-            resolve(BASIC_INFO.SUCCESS_MSG("id", results.insertId));
-          }
-        },
-      );
+      con.query(query, [content, sender], (error, results: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG("id", results.insertId));
+        }
+      });
     });
   }
 
@@ -605,9 +593,6 @@ export class sql_util {
           id AS message_id, 
           content, 
           sender, 
-          status, 
-          user_id, 
-          group_id 
         FROM message;
       `;
 
@@ -620,12 +605,93 @@ export class sql_util {
               message_id: row.message_id,
               content: row.content,
               sender: row.sender,
-              status: row.status,
-              user: row.user_id,
-              group: row.group_id,
             }),
           );
           resolve(BASIC_INFO.SUCCESS_MSG("data", messages));
+        }
+      });
+    });
+  }
+
+  // Message-target
+  static async createMessageTargetTableIfNotExists(
+    con: mysql.Connection,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        CREATE TABLE IF NOT EXISTS message_target (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          type ENUM('user', 'group') NOT NULL,
+          receiver INT NOT NULL,
+          FOREIGN KEY (id) REFERENCES message(id) ON DELETE CASCADE
+        );
+      `;
+
+      con.query(query, (error, results) => {
+        if (error) {
+          reject(BASIC_INFO.FAILED_MSG("message_target", error));
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG("message_target table created"));
+        }
+      });
+    });
+  }
+
+  static async addMessageTarget(
+    con: mysql.Connection,
+    messageId: number,
+    type: "user" | "group",
+    receiver: number,
+  ): Promise<RESPONSE_MSG_TYPE> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        INSERT INTO message_target (id, type, receiver)
+        VALUES (?, ?, ?);
+      `;
+
+      con.query(query, [messageId, type, receiver], (error, results: any) => {
+        if (error) {
+          reject(BASIC_INFO.FAILED_MSG("message_target", error));
+        } else {
+          resolve(
+            BASIC_INFO.SUCCESS_MSG("message_target added", results.insertId),
+          );
+        }
+      });
+    });
+  }
+
+  static async getMessageTarget(
+    con: mysql.Connection,
+    messageId: number,
+    type?: "user" | "group",
+  ): Promise<RESPONSE_MSG_TYPE> {
+    return new Promise((resolve, reject) => {
+      let query = `
+        SELECT receiver, type
+        FROM message_target
+        WHERE id = ?
+      `;
+
+      const params: (number | string)[] = [messageId];
+
+      // type が指定されている場合はクエリを追加
+      if (type) {
+        query += ` AND type = ?`;
+        params.push(type);
+      }
+
+      con.query(query, params, (error, results: any) => {
+        if (error) {
+          reject(BASIC_INFO.FAILED_MSG("getMessageTarget", error));
+        } else {
+          const targets = results.map(
+            (row: { receiver: number; type: string }) => ({
+              receiver: row.receiver,
+              type: row.type,
+            }),
+          );
+          resolve(BASIC_INFO.SUCCESS_MSG("targets", targets));
         }
       });
     });
@@ -691,7 +757,7 @@ export class sql_util {
 
   static async getResponse(
     con: mysql.Connection,
-    message_id: number
+    message_id: number,
   ): Promise<any> {
     const query = `
       SELECT user_id, safety, comment
@@ -704,13 +770,14 @@ export class sql_util {
         if (error) {
           reject(BASIC_INFO.FAILED_MSG("message", error.message));
         } else {
-
-          const responseData = (results as mysql.RowDataPacket[]).map((row: any) => ({
-            user: row.user_id,
-            safety: row.safety,
-            comment: row.comment
-          }));
-          resolve(BASIC_INFO.SUCCESS_MSG( "res", responseData ));
+          const responseData = (results as mysql.RowDataPacket[]).map(
+            (row: any) => ({
+              user: row.user_id,
+              safety: row.safety,
+              comment: row.comment,
+            }),
+          );
+          resolve(BASIC_INFO.SUCCESS_MSG("res", responseData));
         }
       });
     });

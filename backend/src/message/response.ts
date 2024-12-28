@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Session from "../system/session";
 import { sql_util } from "../system/mysql/sql_util";
-import { sql} from "../server";
+import { sql } from "../server";
 const BASIC_INFO = require("../basic_info.ts");
 
 export const postResponse = async (req: Request, res: Response) => {
@@ -31,9 +31,12 @@ export const getResponse = async (req: Request, res: Response) => {
     res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.INVALID_SESSION_MSG));
     return;
   }
-  
-  const responses = await sql_util.getResponse(sql.getConnection(), parseInt(message_id));
-  
+
+  const responses = await sql_util.getResponse(
+    sql.getConnection(),
+    parseInt(message_id),
+  );
+
   const renamed_responses = await Promise.all(
     responses.res.map(async (response: any) => {
       response.user = (
@@ -43,6 +46,6 @@ export const getResponse = async (req: Request, res: Response) => {
       return response;
     }),
   );
-  
-  res.send(BASIC_INFO.SUCCESS_MSG("response",renamed_responses));
+
+  res.send(BASIC_INFO.SUCCESS_MSG("response", renamed_responses));
 };

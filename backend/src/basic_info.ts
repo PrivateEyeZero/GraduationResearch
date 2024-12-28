@@ -38,9 +38,9 @@ const NO_DISCOD_MSG = "no-registerd-discord";
 
 //Provider
 enum PROVIDER {
-  DISCORD = "discord",
-  LINE = "line",
-  TEAMS = "teams",
+  DISCORD = "Discord",
+  LINE = "LINE",
+  TEAMS = "Teams",
 }
 
 module.exports = {

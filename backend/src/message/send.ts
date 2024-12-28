@@ -7,9 +7,10 @@ import { RESPONSE_MSG_TYPE } from "../basic_info";
 const BASIC_INFO = require("../basic_info.ts");
 
 export const send = async (req: Request, res: Response) => {
+  console.log("send", req.body);
   const session_id = req.body.session_id as string;
-  const provider = req.body.provider as string;
-  const group_id = req.body.group_id as number;
+  const providers = req.body.providers as string[];
+  const group_ids = req.body.group_ids as number[];
   const message = req.body.message as string;
 
   const uuid = Session.getSessionUser(session_id);
@@ -25,36 +26,53 @@ export const send = async (req: Request, res: Response) => {
     uuid,
   );
 
-  const groupInfo = await sql_util.getGroupProviderInfo(
-    sql.getConnection(),
-    group_id,
-    provider,
-  );
   let sendMessage = message + `\n\nsend by ${user.id}`;
-  const id = (await sql_util.addMessage(
-    sql.getConnection(),
-    sendMessage,
-    uuid,
-    "group",
-    -1,
-    group_id,
-  )).id;
-  console.log(BASIC_INFO)
+  const id = (await sql_util.addMessage(sql.getConnection(), sendMessage, uuid))
+    .id;
   sendMessage += `\n安否応答: ${BASIC_INFO.FRONT_URL}/message/response?message_id=${id}`;
-  const p = BASIC_INFO.PROVIDER;
-  switch (provider) {
-    case p.DISCORD:
-      DiscordUtil.sendMessage(groupInfo?.channel as string, sendMessage);
+
+  let res_code = 200;
+  group_ids.forEach(async (group_id) => {
+    await sql_util.addMessageTarget(
+      sql.getConnection(),
+      parseInt(id as string),
+      "group",
+      group_id,
+    );
+    providers.forEach(async (p) => {
+      console.log(p);
+      const groupInfo = await sql_util.getGroupProviderInfo(
+        sql.getConnection(),
+        group_id,
+        p,
+      );
+      const PROVIDER = BASIC_INFO.PROVIDER;
+      switch (p) {
+        case PROVIDER.DISCORD:
+          DiscordUtil.sendMessage(groupInfo?.channel as string, sendMessage);
+          console.log("discord");
+          return;
+        case PROVIDER.TEAMS:
+          return;
+        case PROVIDER.LINE:
+          console.log("tet");
+          return;
+        default:
+          res_code = 400;
+          console.log("none");
+          return;
+      }
+    });
+  });
+  switch (res_code) {
+    case 200:
       res.send(BASIC_INFO.SUCCESS_MSG());
       return;
-    case p.TEAMS:
-      return;
-    case p.LINE:
+    case 400:
+      res.send(BASIC_INFO.FAILED_MSG("message", "Invalid provider"));
       return;
     default:
-      res.send(
-        BASIC_INFO.FAILED_MSG("message", BASIC_INFO.INVALID_PROVIDER_MSG),
-      );
+      res.send(BASIC_INFO.FAILED_MSG("message", "Unknown error"));
       return;
   }
 };

@@ -56,25 +56,32 @@ const MessageResponse = () => {
     }
   }, [router.isReady]);
 
-    useEffect(()=> console.log(messageId), [messageId]);
+  useEffect(() => console.log(messageId), [messageId]);
 
   useEffect(() => {
     const fetchMessagesInfo = async () => {
-      if(messageId === -1) return;
+      if (messageId === -1) return;
       const session_id = Session.getSessionId();
       if (session_id === null) {
         router.push(INVALID_SESSION_PAGE);
         return;
       }
       try {
-        console.log("body", JSON.stringify({ session_id, message_id: messageId }))
+        console.log(
+          "body",
+          JSON.stringify({ session_id, message_id: messageId }),
+        );
         const data = await (
           await fetch(messagesUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ session_id, message_id: messageId,test:"test" }),
+            body: JSON.stringify({
+              session_id,
+              message_id: messageId,
+              test: "test",
+            }),
           })
         ).json();
         console.log(data);
@@ -93,7 +100,7 @@ const MessageResponse = () => {
     fetchMessagesInfo();
   }, [router, messageId]);
 
-  useEffect(()=> console.log(response), [response]);
+  useEffect(() => console.log(response), [response]);
   if (loading) {
     return (
       <Box
@@ -148,13 +155,15 @@ const MessageResponse = () => {
             <Tr
               key={res.user}
               bg={index % 2 === 0 ? colors.lightGrayBg : colors.white}
-            >              <Td
-            borderBottom={borders.lightGray}
-            borderRight={borders.lightGray}
-          >
-            {res.user}
-          </Td>
-          <Td
+            >
+              {" "}
+              <Td
+                borderBottom={borders.lightGray}
+                borderRight={borders.lightGray}
+              >
+                {res.user}
+              </Td>
+              <Td
                 borderBottom={borders.lightGray}
                 borderRight={borders.lightGray}
               >
