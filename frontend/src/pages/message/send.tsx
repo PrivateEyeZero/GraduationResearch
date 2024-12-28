@@ -117,7 +117,7 @@ const SendMessage = () => {
   return (
     <Box width="150px">
       <FormControl mb={4}>
-        <FormLabel>プロバイダ選択</FormLabel>
+        <FormLabel>サービス選択</FormLabel>
         <Select value={provider} onChange={handleProviderChange}>
           <option value="">選択してください</option>
           {providerOptions.map((option) => (
