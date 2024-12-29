@@ -44,10 +44,12 @@ sql_util.createAllTablesIfNotExists(sql.getConnection());
 
 const discord = new Discord();
 
-const line = {
-  channelId: process.env.LINE_CHANNEL_ID,
-  channelSecret: process.env.LINE_CHANNEL_SECRET,
+const LINE_ENV = {
+  msgChannelId: process.env.LINE_CHANNEL_ID,
+  msgChannelSecret: process.env.LINE_MSG_CHANNEL_SECRET,
+  authChannelId: process.env.LINE_AUTH_CHANNEL_ID,
+  authChannelSecret: process.env.LINE_AUTH_CHANNEL_SECRET,
   accessToken: process.env.LINE_ACCESS_TOKEN,
 };
 
-export { app, server, sql, discord, line };
+export { app, server, sql, discord, LINE_ENV };

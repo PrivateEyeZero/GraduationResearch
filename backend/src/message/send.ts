@@ -56,7 +56,7 @@ export const send = async (req: Request, res: Response) => {
         case PROVIDER.TEAMS:
           return;
         case PROVIDER.LINE:
-          Line.sendMessage(sendMessage)
+          Line.sendMessage(sendMessage);
           console.log("line");
           return;
         default:

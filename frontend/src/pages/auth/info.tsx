@@ -20,7 +20,7 @@ interface UserInfo {
   userId: string;
   userName: string;
   discordId: string;
-  teamsId: string;
+  lineId: string;
 }
 
 const url = BACKEND_URL + "/auth/info";
@@ -60,7 +60,7 @@ const AuthInfo: React.FC = () => {
             userId: data.uuid,
             userName: data.id,
             discordId: data.discord,
-            teamsId: data.teams,
+            lineId: data.line,
           });
         })
         .catch((error) => console.error("Error:", error));
@@ -116,7 +116,9 @@ const AuthInfo: React.FC = () => {
           <ListItem>
             {getInfoItem("Discord", userInfo.discordId, "/auth/discord")}
           </ListItem>
-          <ListItem>{getInfoItem("Teams", userInfo.teamsId)}</ListItem>
+          <ListItem>
+            {getInfoItem("LINE", userInfo.lineId, "/auth/line")}
+          </ListItem>
         </List>
       )}
     </Box>

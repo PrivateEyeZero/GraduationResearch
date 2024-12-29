@@ -460,7 +460,7 @@ export class sql_util {
         CREATE TABLE IF NOT EXISTS integration (
           uuid INT PRIMARY KEY,
           discord VARCHAR(32),
-          line VARCHAR(32),
+          line VARCHAR(64),
           github VARCHAR(32),
           teams VARCHAR(32),
           FOREIGN KEY (uuid) REFERENCES user(uuid) ON DELETE CASCADE
@@ -480,33 +480,31 @@ export class sql_util {
   static async updateIntegration(
     con: mysql.Connection,
     uuid: number,
-    discord?: string,
-    line?: string,
-    github?: string,
-    teams?: string,
+    type: "discord" | "line" | "github" | "teams",
+    value: string | null,
   ): Promise<RESPONSE_MSG_TYPE> {
+    const validTypes = ["discord", "line", "github", "teams"];
+
+    if (!validTypes.includes(type)) {
+      throw new Error(`Invalid type: ${type}`);
+    }
+
+    // クエリ構築
     const query = `
-      INSERT INTO integration (uuid, discord, line, github, teams)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO integration (uuid, ${type})
+      VALUES (?, ?)
       ON DUPLICATE KEY UPDATE
-        discord = VALUES(discord),
-        line = COALESCE(VALUES(line), line),
-        github = COALESCE(VALUES(github), github),
-        teams = COALESCE(VALUES(teams), teams)
+      ${type} = VALUES(${type})
     `;
 
     return new Promise((resolve, reject) => {
-      con.query(
-        query,
-        [uuid, discord || null, line || null, github || null, teams || null],
-        (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(BASIC_INFO.SUCCESS_MSG());
-          }
-        },
-      );
+      con.query(query, [uuid, value], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG());
+        }
+      });
     });
   }
 

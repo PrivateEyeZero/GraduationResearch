@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import {line} from "../server";
+import {LINE_ENV} from "../server";
 import axios from "axios";
 const LINE_API_URL = "https://api.line.me/v2/bot/message/push";
 
@@ -21,7 +21,7 @@ export const send = async (req: Request, res: Response) => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${line.accessToken}`,
+          Authorization: `Bearer ${LINE_ENV.accessToken}`,
         },
       }
     );

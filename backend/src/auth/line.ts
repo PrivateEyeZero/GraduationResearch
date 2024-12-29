@@ -1,18 +1,19 @@
 require("dotenv").config();
 import { Request, Response } from "express";
 import { sql_util } from "../system/mysql/sql_util";
-import { sql } from "../server";
+import { LINE_ENV, sql } from "../server";
 import Session from "../system/session";
 import axios from "axios";
 
 const BASIC_INFO = require("../basic_info.ts");
 
-const REDIRECT_URL = BASIC_INFO.SERVER_URL + "/auth/discord/callback";
+const LINE_REDIRECT_URL = BASIC_INFO.SERVER_URL + "/auth/line/callback";
 
-export const discord = (req: Request, res: Response) => {
-  const session_id = req.body.session_id; //req.body.session_id as string;
+export const line = (req: Request, res: Response) => {
+  const session_id = req.body.session_id;
   console.log(session_id);
   const uuid = Session.getSessionUser(session_id);
+
   if (uuid === null) {
     const failed_msg = BASIC_INFO.FAILED_MSG(
       "session_id",
@@ -22,18 +23,18 @@ export const discord = (req: Request, res: Response) => {
     res.send(failed_msg);
     return;
   }
-  // Discord認証のURLを構築
-  console.log("clent_id", process.env.DISCORD_CLIENT_ID);
-  console.log("redirect_uri", REDIRECT_URL);
-  const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${REDIRECT_URL}&response_type=code&scope=identify&state=${session_id}`;
-  // クライアントにDiscord認証のURLを返す
-  res.json({ redirectUrl: discordAuthUrl });
+
+  // LINE認証のURLを構築
+  const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${LINE_ENV.authChannelId}&redirect_uri=${LINE_REDIRECT_URL}&state=${session_id}&scope=profile%20openid`;
+  // クライアントにLINE認証のURLを返す
+  res.json({ redirectUrl: lineAuthUrl });
 };
 
-export const discord_callback = async (req: Request, res: Response) => {
+export const line_callback = async (req: Request, res: Response) => {
   const { code, state } = req.query;
   const session_id = state as string;
   const uuid = Session.getSessionUser(session_id);
+
   console.log("uuid", Session.getSessionUser(session_id));
   if (uuid === null) {
     const failed_msg = BASIC_INFO.FAILED_MSG(
@@ -45,20 +46,19 @@ export const discord_callback = async (req: Request, res: Response) => {
     return;
   }
 
-  // ランダムな文字列とともに処理を行う
   console.log("Received state:", state);
   console.log("Authorization code:", code);
+
   try {
-    // Discordからアクセストークンを取得
+    // LINEからアクセストークンを取得
     const tokenResponse = await axios.post(
-      "https://discord.com/api/oauth2/token",
+      "https://api.line.me/oauth2/v2.1/token",
       new URLSearchParams({
-        client_id: process.env.DISCORD_CLIENT_ID!,
-        client_secret: process.env.DISCORD_CLIENT_SECRET!,
         grant_type: "authorization_code",
         code: code as string,
-        redirect_uri: REDIRECT_URL,
-        scope: "identify",
+        redirect_uri: LINE_REDIRECT_URL,
+        client_id: LINE_ENV.authChannelId!,
+        client_secret: LINE_ENV.authChannelSecret!,
       }).toString(),
       {
         headers: {
@@ -66,27 +66,27 @@ export const discord_callback = async (req: Request, res: Response) => {
         },
       },
     );
-
+    console.log(tokenResponse.data);
     const accessToken = tokenResponse.data.access_token;
 
     // アクセストークンを使ってユーザー情報を取得
-    const userResponse = await axios.get(
-      "https://discord.com/api/v10/users/@me",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+    const userResponse = await axios.get("https://api.line.me/v2/profile", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+    });
 
-    const userId = userResponse.data;
-    console.log("discord-auth user-data", userResponse);
+    const userId = userResponse.data.userId;
+    console.log("line-auth user-data", userResponse.data);
+
     const con = sql.getConnection();
-
-    await sql_util.updateIntegration(con, uuid, "discord", userId.id);
+    await sql_util.updateIntegration(con, uuid, "line", userId);
   } catch (error) {
     console.error("Error:", error);
+    res.send({ success: false, message: "LINE authentication failed." });
+    return;
   }
+
   // 処理が終わったらクライアントにリダイレクトするURLを返す
   res.redirect(BASIC_INFO.LOCAL_AUTH_URL);
 };
