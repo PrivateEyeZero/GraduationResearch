@@ -59,7 +59,7 @@ export class DiscordUtil {
     }
   }
 
-  static async sendMessage(
+  static async sendChannelMessage(
     channelId: string | bigint,
     msg: string,
   ): Promise<void> {
@@ -81,6 +81,27 @@ export class DiscordUtil {
     }
   }
 
+  static async sendUserMessage(
+    userId: string | bigint,
+    msg: string,
+  ): Promise<void> {
+    const id = typeof userId === "string" ? BigInt(userId) : userId;
+    try {
+      const client = discord.getClient();
+      const user = await client.users.fetch(id.toString());
+  
+      if (user) {
+        // DMを送信
+        await user.send(msg);
+        console.log(`Message sent to user ${id}`);
+      } else {
+        console.error(`User ${id} not found`);
+      }
+    } catch (error) {
+      console.error(`Error sending DM to user: ${error}`);
+    }
+  }
+  
   static async sendLog(msg: string): Promise<void> {
     try {
       const client = discord.getClient();

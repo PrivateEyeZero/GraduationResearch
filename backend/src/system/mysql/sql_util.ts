@@ -308,7 +308,7 @@ export class sql_util {
 
   static async getGroupMembers(
     con: mysql.Connection,
-    group_name: string,
+    group_id: string,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT u.id, u.uuid 
@@ -319,7 +319,7 @@ export class sql_util {
     `;
 
     return new Promise((resolve, reject) => {
-      con.query(query, [group_name], (error, results) => {
+      con.query(query, [group_id], (error, results) => {
         if (error) {
           resolve(BASIC_INFO.FAILED_MSG("message", error.message));
         } else {

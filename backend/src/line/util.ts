@@ -4,12 +4,12 @@ import axios from "axios";
 const LINE_API_URL = "https://api.line.me/v2/bot/message/push";
 
 export class Line {
-  public static sendMessage = async (msg: string) => {
+  public static sendMessage = async (userId: string, msg: string) => {
     try {
       const response = await axios.post(
         LINE_API_URL,
         {
-          to: "Uba58d381fd21bfd4349e5eac9835eb01",
+          to:  userId,
           messages: [
             {
               type: "text",

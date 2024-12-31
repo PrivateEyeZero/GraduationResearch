@@ -11,7 +11,8 @@ export const send = async (req: Request, res: Response) => {
   console.log("send", req.body);
   const session_id = req.body.session_id as string;
   const providers = req.body.providers as string[];
-  const group_ids = req.body.group_ids as number[];
+  const group_ids = req.body.group_ids as number[] ?? [];
+  const user_ids = req.body.user_ids as number[] ?? [];
   const message = req.body.message as string;
 
   const uuid = Session.getSessionUser(session_id);
@@ -33,6 +34,8 @@ export const send = async (req: Request, res: Response) => {
   sendMessage += `\n安否応答: ${BASIC_INFO.FRONT_URL}/message/response?message_id=${id}`;
 
   let res_code = 200;
+
+  const sendedUserSet = new Set<number>();
   group_ids.forEach(async (group_id) => {
     await sql_util.addMessageTarget(
       sql.getConnection(),
@@ -40,6 +43,9 @@ export const send = async (req: Request, res: Response) => {
       "group",
       group_id,
     );
+    const g_members = (await sql_util.getGroupMembers(sql.getConnection(), group_id.toString())).members as any[];
+
+    
     providers.forEach(async (p) => {
       console.log(p);
       const groupInfo = await sql_util.getGroupProviderInfo(
@@ -50,13 +56,20 @@ export const send = async (req: Request, res: Response) => {
       const PROVIDER = BASIC_INFO.PROVIDER;
       switch (p) {
         case PROVIDER.DISCORD:
-          DiscordUtil.sendMessage(groupInfo?.channel as string, sendMessage);
+          DiscordUtil.sendChannelMessage(groupInfo?.channel as string, sendMessage);
           console.log("discord");
           return;
         case PROVIDER.TEAMS:
           return;
         case PROVIDER.LINE:
-          Line.sendMessage(sendMessage);
+          g_members.forEach(async (m: any) => {
+            const t_user = m.uuid;
+            if(sendedUserSet.has(t_user)) return;
+            const lineId = (await sql_util.getIntegrations(sql.getConnection(), t_user)).line as string;
+            if(lineId === null || lineId=="") return;
+            Line.sendMessage(lineId,sendMessage);
+          })
+          
           console.log("line");
           return;
         default:
@@ -65,7 +78,42 @@ export const send = async (req: Request, res: Response) => {
           return;
       }
     });
+
+    g_members.forEach(async (m: any) => {
+      sendedUserSet.add(m.uuid);
+    })
   });
+
+  user_ids.forEach(async (user_id) => {
+    if(sendedUserSet.has(user_id)) return;
+    const integration = (await sql_util.getIntegrations(sql.getConnection(), user_id));
+    providers.forEach(async (p) => {
+      console.log(p);
+      const PROVIDER = BASIC_INFO.PROVIDER;
+      switch (p) {
+        case PROVIDER.DISCORD:
+          const discordId = integration.discord as string;
+          if(discordId === null || discordId=="") return;
+          DiscordUtil.sendUserMessage(discordId, sendMessage);
+          console.log("discord");
+          return;
+        case PROVIDER.TEAMS:
+          return;
+        case PROVIDER.LINE:
+          const lineId = integration.line as string;
+          if(lineId === null || lineId=="") return;
+          Line.sendMessage(lineId,sendMessage);
+          
+          console.log("line");
+          return;
+        default:
+          res_code = 400;
+          console.log("none");
+          return;
+      }
+    });
+  })
+
   switch (res_code) {
     case 200:
       res.send(BASIC_INFO.SUCCESS_MSG());

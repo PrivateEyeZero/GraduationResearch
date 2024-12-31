@@ -17,12 +17,20 @@ import { useRouter } from "next/router";
 
 const send_url = BACKEND_URL + "/message/send";
 const groupUrl = BACKEND_URL + "/group/get_groups";
+const getMembersUrl = BACKEND_URL + "/group/member/get";
+
+interface Member {
+  id: string;
+  uuid: string;
+}
 
 const SendMessage = () => {
   const [providerOptions, setProviderOptions] = useState<string[]>([]);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [members, setMembers] = useState<Array<Member>>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]); // 選択されたユーザーのuuid
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +58,17 @@ const SendMessage = () => {
 
         setProviderOptions(["Discord", "Teams", "LINE"]);
         setGroups(data.groups);
+
+        const response_all = await fetch(getMembersUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ session_id, group_id: "" }),
+        });
+        const data_all = (await response_all.json()) ;
+        console.log(data_all.members)
+        setMembers(data_all.members as Array<Member>);
       } catch (error) {
         console.error("エラーが発生しました", error);
       } finally {
@@ -61,20 +80,26 @@ const SendMessage = () => {
   }, []);
 
   const handleProviderSelection = (provider: string) => {
-    setSelectedProviders(
-      (prev) =>
-        prev.includes(provider)
-          ? prev.filter((p) => p !== provider) // 選択解除
-          : [...prev, provider], // 新規選択
+    setSelectedProviders((prev) =>
+      prev.includes(provider)
+        ? prev.filter((p) => p !== provider) // 選択解除
+        : [...prev, provider] // 新規選択
     );
   };
 
   const handleGroupSelection = (groupId: string) => {
-    setSelectedGroups(
-      (prev) =>
-        prev.includes(groupId)
-          ? prev.filter((id) => id !== groupId) // 選択解除
-          : [...prev, groupId], // 新規選択
+    setSelectedGroups((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((id) => id !== groupId) // 選択解除
+        : [...prev, groupId] // 新規選択
+    );
+  };
+
+  const handleUserSelection = (userUuid: string) => {
+    setSelectedUsers((prev) =>
+      prev.includes(userUuid)
+        ? prev.filter((uuid) => uuid !== userUuid) // 選択解除
+        : [...prev, userUuid] // 新規選択
     );
   };
 
@@ -83,8 +108,8 @@ const SendMessage = () => {
       alert("少なくとも1つのサービスを選択してください");
       return;
     }
-    if (selectedGroups.length === 0) {
-      alert("少なくとも1つのグループを選択してください");
+    if (selectedGroups.length === 0 && selectedUsers.length === 0) {
+      alert("少なくとも1つのグループ又はユーザを選択してください");
       return;
     }
 
@@ -103,6 +128,7 @@ const SendMessage = () => {
           session_id: session_id,
           providers: selectedProviders,
           group_ids: selectedGroups,
+          user_ids: selectedUsers,
           message: message,
         }),
       })
@@ -153,6 +179,25 @@ const SendMessage = () => {
                   onChange={() => handleGroupSelection(group.id)}
                 />
                 {group.name}
+              </label>
+            </Box>
+          ))}
+        </Box>
+      </FormControl>
+
+      <FormControl mb={4}>
+        <FormLabel>ユーザー選択</FormLabel>
+        <Box border="1px solid black" p={4}>
+          {members.map((member) => (
+            <Box key={member.id} mb={2}>
+              <label>
+                <input
+                  type="checkbox"
+                  value={member.id}
+                  checked={selectedUsers.includes(member.uuid)}
+                  onChange={() => handleUserSelection(member.uuid)}
+                />
+                {member.id}
               </label>
             </Box>
           ))}
