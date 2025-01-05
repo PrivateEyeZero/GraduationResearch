@@ -66,7 +66,7 @@ export const add_group = async (req: Request, res: Response) => {
     res.send(group_create_res);
     return;
   }
-  const discord_result = await sql_util.addGroupProvider(
+  const discord_result = await sql_util.addGroupService(
     sql.getConnection(),
     parseInt(group_create_res.group_id as string),
     BASIC_INFO.PROVIDER.DISCORD,

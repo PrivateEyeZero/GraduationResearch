@@ -12,7 +12,7 @@ export class sql_util {
     await sql_util.createIntegrationTableIfNotExists(con);
     await sql_util.createGroupTableIfNotExists(con);
     await sql_util.createGroupMemberTableIfNotExists(con);
-    await sql_util.createGroupProviderTableIfNotExists(con);
+    await sql_util.createGroupServiceTableIfNotExists(con);
     await sql_util.createMessageTableIfNotExists(con);
     await sql_util.createMessageTargetTableIfNotExists(con);
     await sql_util.createResponseTableIfNotExists(con);
@@ -363,16 +363,16 @@ export class sql_util {
     });
   }
 
-  //groupprovider-table
-  static async createGroupProviderTableIfNotExists(
+  //groupservice-table
+  static async createGroupServiceTableIfNotExists(
     con: mysql.Connection,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `      
-        CREATE TABLE IF NOT EXISTS group_provider (
+        CREATE TABLE IF NOT EXISTS group_service (
           id INT AUTO_INCREMENT PRIMARY KEY,
           group_id INT NOT NULL,
-          provider VARCHAR(32) NOT NULL,
+          service VARCHAR(32) NOT NULL,
           role TEXT,
           channel TEXT,
           FOREIGN KEY (group_id) REFERENCES \`group\`(id) ON DELETE CASCADE
@@ -389,20 +389,20 @@ export class sql_util {
     });
   }
 
-  static async getGroupProviderInfo(
+  static async getGroupServiceInfo(
     con: mysql.Connection,
     group_id: number,
-    provider: string,
+    service: string,
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
-      SELECT gp.id, g.name, gp.provider, gp.role, gp.channel
-      FROM group_provider gp
+      SELECT gp.id, g.name, gp.service, gp.role, gp.channel
+      FROM group_service gp
       JOIN \`group\` g ON gp.group_id = g.id
-      WHERE gp.group_id = ? AND gp.provider = ?
+      WHERE gp.group_id = ? AND gp.service = ?
     `;
 
     return new Promise((resolve, reject) => {
-      con.query(query, [group_id, provider], (error, results) => {
+      con.query(query, [group_id, service], (error, results) => {
         if (error) {
           resolve(BASIC_INFO.FAILED_MSG("Error", error.message));
         } else {
@@ -426,20 +426,20 @@ export class sql_util {
     });
   }
 
-  static async addGroupProvider(
+  static async addGroupService(
     con: mysql.Connection,
     groupId: number,
-    provider: string,
+    service: string,
     role: string | null = null,
     channel: string | null = null,
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
-        INSERT INTO group_provider (group_id, provider, role, channel)
+        INSERT INTO group_service (group_id, service, role, channel)
         VALUES (?, ?, ?, ?);
       `;
 
-      const values = [groupId, provider, role, channel];
+      const values = [groupId, service, role, channel];
 
       con.query(query, values, (error, results) => {
         if (error) {

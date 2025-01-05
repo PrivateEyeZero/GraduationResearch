@@ -48,7 +48,7 @@ export const send = async (req: Request, res: Response) => {
     
     providers.forEach(async (p) => {
       console.log(p);
-      const groupInfo = await sql_util.getGroupProviderInfo(
+      const groupInfo = await sql_util.getGroupServiceInfo(
         sql.getConnection(),
         group_id,
         p,
