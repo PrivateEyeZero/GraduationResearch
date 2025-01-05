@@ -6,6 +6,7 @@
   "dependencies": {
     "@types/cors": "^2.8.17",
     "@types/uuid": "^10.0.0",
+    "axios": "^1.7.9",
     "bidirectional-map": "^1.1.1",
     "cors": "^2.8.5",
     "discord.js": "^14.16.1",
