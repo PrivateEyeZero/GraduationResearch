@@ -461,7 +461,6 @@ export class sql_util {
           uuid INT PRIMARY KEY,
           discord VARCHAR(32),
           line VARCHAR(64),
-          github VARCHAR(32),
           teams VARCHAR(32),
           FOREIGN KEY (uuid) REFERENCES user(uuid) ON DELETE CASCADE
         );
@@ -528,7 +527,6 @@ export class sql_util {
             const res = BASIC_INFO.SUCCESS_MSG();
             res.discord = rows[0].discord;
             res.line = rows[0].line;
-            res.github = rows[0].github;
             res.teams = rows[0].teams;
             resolve(res);
           }

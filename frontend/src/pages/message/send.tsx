@@ -126,7 +126,7 @@ const SendMessage = () => {
         },
         body: JSON.stringify({
           session_id: session_id,
-          providers: selectedProviders,
+          service: selectedProviders,
           group_ids: selectedGroups,
           user_ids: selectedUsers,
           message: message,

@@ -10,7 +10,7 @@ const BASIC_INFO = require("../basic_info.ts");
 export const send = async (req: Request, res: Response) => {
   console.log("send", req.body);
   const session_id = req.body.session_id as string;
-  const providers = req.body.providers as string[];
+  const providers = req.body.service as string[];
   const group_ids = req.body.group_ids as number[] ?? [];
   const user_ids = req.body.user_ids as number[] ?? [];
   const message = req.body.message as string;
