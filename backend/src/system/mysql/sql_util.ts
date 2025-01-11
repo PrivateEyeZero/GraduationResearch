@@ -588,13 +588,14 @@ export class sql_util {
         SELECT 
           id AS message_id, 
           content, 
-          sender, 
+          sender 
         FROM message;
       `;
 
       con.query(query, (error, results) => {
         if (error) {
           reject(BASIC_INFO.FAILED_MSG("message", error));
+          console.log(error);
         } else {
           const messages = (results as mysql.RowDataPacket[]).map(
             (row: any) => ({

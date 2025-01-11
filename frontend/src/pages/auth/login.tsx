@@ -37,7 +37,7 @@ export default function Login() {
   return (
     <Box p={4}>
       <VStack spacing={4}>
-        <Box>Session:</Box>
+        <Box>IDとパスワードを入力してください。</Box>
         <Box>
           ID:
           <Input
