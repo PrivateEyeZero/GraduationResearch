@@ -20,20 +20,22 @@ export const getMessages = async (req: Request, res: Response) => {
   }
   const messages = (await sql_util.getAllMessages(sql.getConnection()))
     .data as Object[] as MESSAGE_LIST_TYPE[];
-
+  console.log(messages)
   const renamed_message = await Promise.all(
     messages.map(async (message) => {
       message.sender = (
         await sql_util.getUser(sql.getConnection(), parseInt(message.sender))
       ).id as string;
-      message.users = message.groups = [];
+      message.users = [];
+      message.groups = [];
       const targets = (
         await sql_util.getMessageTarget(
           sql.getConnection(),
           parseInt(message.message_id),
         )
       ).targets as Object[];
-      targets.forEach(async (target: any) => {
+      for(const target of targets as any[]) {
+        console.log(target)
         if (target.type == "user") {
           message.users.push(
             (
@@ -43,7 +45,7 @@ export const getMessages = async (req: Request, res: Response) => {
               )
             ).id as string,
           );
-        } else
+        } else{
           message.groups.push(
             (
               await sql_util.getGroupName(
@@ -52,8 +54,9 @@ export const getMessages = async (req: Request, res: Response) => {
               )
             ).group_name as string,
           );
-      });
-
+        }
+        console.log(message)  
+      };
       return message;
     }),
   );

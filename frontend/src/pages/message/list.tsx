@@ -167,8 +167,8 @@ const MessageList = () => {
                 borderBottom={borders.lightGray}
                 borderRight={borders.lightGray}
               >
-                {message.groups}
-                {message.users}
+                Group: {message.groups}<br />
+                User: {message.users}
               </Td>
               <Td borderBottom={borders.lightGray}>
                 <Button
