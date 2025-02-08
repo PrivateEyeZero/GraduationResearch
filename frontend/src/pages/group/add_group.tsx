@@ -79,7 +79,7 @@ const RoleForm: React.FC = () => {
       </FormControl>
 
       <Button type="submit" colorScheme="teal" width="180px">
-        送信
+        作成する
       </Button>
     </VStack>
   );

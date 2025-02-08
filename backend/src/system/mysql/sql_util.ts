@@ -6,7 +6,7 @@ const BASIC_INFO = require("../../basic_info.ts");
 export class sql_util {
   //create-table
   static async createAllTablesIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     await sql_util.createUserTableIfNotExists(con);
     await sql_util.createIntegrationTableIfNotExists(con);
@@ -18,7 +18,7 @@ export class sql_util {
     await sql_util.createResponseTableIfNotExists(con);
   }
   static async createUserTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -45,7 +45,7 @@ export class sql_util {
   static async addUser(
     con: mysql.Connection,
     id: string,
-    pass: string,
+    pass: string
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `INSERT INTO user (id, pass) VALUES (?, ?)`;
 
@@ -54,7 +54,7 @@ export class sql_util {
         if (error) {
           if (error.code === "ER_DUP_ENTRY") {
             resolve(
-              BASIC_INFO.FAILED_MSG("message", "IDが既に登録されています"),
+              BASIC_INFO.FAILED_MSG("message", "IDが既に登録されています")
             );
           } else {
             resolve(BASIC_INFO.FAILED_MSG("message", error.message));
@@ -67,7 +67,7 @@ export class sql_util {
   }
 
   static async getAllUser(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<{ uuid: number; id: string }[]> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -82,8 +82,8 @@ export class sql_util {
           resolve(
             BASIC_INFO.SUCCESS_MSG(
               "members",
-              rows.map((row) => ({ uuid: row.uuid, id: row.id })),
-            ),
+              rows.map((row) => ({ uuid: row.uuid, id: row.id }))
+            )
           );
         }
       });
@@ -93,7 +93,7 @@ export class sql_util {
   static async authUser(
     con: mysql.Connection,
     id: string,
-    pass: string,
+    pass: string
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `SELECT * FROM user WHERE id = ? AND pass = ?`;
 
@@ -103,7 +103,7 @@ export class sql_util {
         const rows = results as mysql.RowDataPacket[];
         if (rows.length === 0) {
           resolve(
-            BASIC_INFO.FAILED_MSG("message", "IDまたはパスワードが違います"),
+            BASIC_INFO.FAILED_MSG("message", "IDまたはパスワードが違います")
           );
         } else {
           const res = BASIC_INFO.SUCCESS_MSG();
@@ -116,7 +116,7 @@ export class sql_util {
 
   static async getUser(
     con: mysql.Connection,
-    uuid: number,
+    uuid: number
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `SELECT id FROM user WHERE uuid = ?`;
 
@@ -128,7 +128,7 @@ export class sql_util {
           const rows = results as mysql.RowDataPacket[];
           if (rows.length === 0) {
             resolve(
-              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません"),
+              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません")
             );
           } else {
             const res = BASIC_INFO.SUCCESS_MSG();
@@ -142,7 +142,7 @@ export class sql_util {
 
   static async getUUID(
     con: mysql.Connection,
-    id: string,
+    id: string
   ): Promise<string | null> {
     const query = `SELECT uuid FROM user WHERE id = ?`;
 
@@ -154,7 +154,7 @@ export class sql_util {
           const rows = results as mysql.RowDataPacket[];
           if (rows.length === 0) {
             resolve(
-              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません"),
+              BASIC_INFO.FAILED_MSG("message", "指定されたIDは存在しません")
             );
           } else {
             // UUIDを取得し、レスポンスとして返す
@@ -168,7 +168,7 @@ export class sql_util {
 
   //Group-table
   static async createGroupTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -190,7 +190,7 @@ export class sql_util {
 
   static async addGroup(
     con: mysql.Connection,
-    name: string,
+    name: string
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       INSERT INTO \`group\` (name)
@@ -234,7 +234,7 @@ export class sql_util {
 
   static async getGroupName(
     con: mysql.Connection,
-    group_id: number,
+    group_id: number
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT name 
@@ -263,7 +263,7 @@ export class sql_util {
 
   //GroupMember-table
   static async createGroupMemberTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -288,7 +288,7 @@ export class sql_util {
   static async addMember(
     con: mysql.Connection,
     user_id: number,
-    group_id: number,
+    group_id: number
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       INSERT INTO group_member (user_id, group_id)
@@ -306,9 +306,30 @@ export class sql_util {
     });
   }
 
+  static async removeMember(
+    con: mysql.Connection,
+    user_id: number,
+    group_id: number
+  ): Promise<RESPONSE_MSG_TYPE> {
+    const query = `
+    DELETE FROM group_member
+    WHERE user_id = ? AND group_id = ?
+    `;
+
+    return new Promise((resolve, _) => {
+      con.query(query, [user_id, group_id], (error, results) => {
+        if (error) {
+          resolve(BASIC_INFO.FAILED_MSG("message", error.message));
+        } else {
+          resolve(BASIC_INFO.SUCCESS_MSG());
+        }
+      });
+    });
+  }
+
   static async getGroupMembers(
     con: mysql.Connection,
-    group_id: string,
+    group_id: string
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT u.id, u.uuid 
@@ -339,7 +360,7 @@ export class sql_util {
 
   static async getUserGroups(
     con: mysql.Connection,
-    userId: number,
+    userId: number
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT g.name 
@@ -365,7 +386,7 @@ export class sql_util {
 
   //groupservice-table
   static async createGroupServiceTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `      
@@ -392,7 +413,7 @@ export class sql_util {
   static async getGroupServiceInfo(
     con: mysql.Connection,
     group_id: number,
-    service: string,
+    service: string
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       SELECT gp.id, g.name, gp.service, gp.role, gp.channel
@@ -411,8 +432,8 @@ export class sql_util {
             resolve(
               BASIC_INFO.FAILED_MSG(
                 "Error",
-                "指定されたグループプロバイダは存在しません。",
-              ),
+                "指定されたグループプロバイダは存在しません。"
+              )
             );
           } else {
             const row = rows[0];
@@ -431,7 +452,7 @@ export class sql_util {
     groupId: number,
     service: string,
     role: string | null = null,
-    channel: string | null = null,
+    channel: string | null = null
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -453,7 +474,7 @@ export class sql_util {
 
   //Integration-table
   static async createIntegrationTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -480,7 +501,7 @@ export class sql_util {
     con: mysql.Connection,
     uuid: number,
     type: "discord" | "line" | "github" | "teams",
-    value: string | null,
+    value: string | null
   ): Promise<RESPONSE_MSG_TYPE> {
     const validTypes = ["discord", "line", "github", "teams"];
 
@@ -509,7 +530,7 @@ export class sql_util {
 
   static async getIntegrations(
     con: mysql.Connection,
-    uuid: number,
+    uuid: number
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `SELECT * FROM integration WHERE uuid = ?`;
 
@@ -521,7 +542,7 @@ export class sql_util {
           const rows = results as mysql.RowDataPacket[];
           if (rows.length === 0) {
             resolve(
-              BASIC_INFO.SUCCESS_MSG("message", "Integrationが存在しません"),
+              BASIC_INFO.SUCCESS_MSG("message", "Integrationが存在しません")
             );
           } else {
             const res = BASIC_INFO.SUCCESS_MSG();
@@ -537,7 +558,7 @@ export class sql_util {
 
   //Message-table
   static async createMessageTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -562,7 +583,7 @@ export class sql_util {
   static async addMessage(
     con: mysql.Connection,
     content: string,
-    sender: number,
+    sender: number
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -581,7 +602,7 @@ export class sql_util {
   }
 
   static async getAllMessages(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -602,7 +623,7 @@ export class sql_util {
               message_id: row.message_id,
               content: row.content,
               sender: row.sender,
-            }),
+            })
           );
           resolve(BASIC_INFO.SUCCESS_MSG("data", messages));
         }
@@ -612,7 +633,7 @@ export class sql_util {
 
   // Message-target
   static async createMessageTargetTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -638,7 +659,7 @@ export class sql_util {
     con: mysql.Connection,
     messageId: number,
     type: "user" | "group",
-    receiver: number,
+    receiver: number
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       const query = `
@@ -651,7 +672,7 @@ export class sql_util {
           reject(BASIC_INFO.FAILED_MSG("message_target", error));
         } else {
           resolve(
-            BASIC_INFO.SUCCESS_MSG("message_target added", results.insertId),
+            BASIC_INFO.SUCCESS_MSG("message_target added", results.insertId)
           );
         }
       });
@@ -661,7 +682,7 @@ export class sql_util {
   static async getMessageTarget(
     con: mysql.Connection,
     messageId: number,
-    type?: "user" | "group",
+    type?: "user" | "group"
   ): Promise<RESPONSE_MSG_TYPE> {
     return new Promise((resolve, reject) => {
       let query = `
@@ -686,7 +707,7 @@ export class sql_util {
             (row: { receiver: number; type: string }) => ({
               receiver: row.receiver,
               type: row.type,
-            }),
+            })
           );
           resolve(BASIC_INFO.SUCCESS_MSG("targets", targets));
         }
@@ -696,7 +717,7 @@ export class sql_util {
 
   //Response-table
   static async createResponseTableIfNotExists(
-    con: mysql.Connection,
+    con: mysql.Connection
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `      
@@ -727,7 +748,7 @@ export class sql_util {
     user_id: number,
     message_id: number,
     safety: boolean,
-    comment: string,
+    comment: string
   ): Promise<RESPONSE_MSG_TYPE> {
     const query = `
       INSERT INTO response (user_id, message_id, safety, comment)
@@ -747,14 +768,14 @@ export class sql_util {
           } else {
             resolve(BASIC_INFO.SUCCESS_MSG());
           }
-        },
+        }
       );
     });
   }
 
   static async getResponse(
     con: mysql.Connection,
-    message_id: number,
+    message_id: number
   ): Promise<any> {
     const query = `
       SELECT user_id, safety, comment
@@ -772,7 +793,7 @@ export class sql_util {
               user: row.user_id,
               safety: row.safety,
               comment: row.comment,
-            }),
+            })
           );
           resolve(BASIC_INFO.SUCCESS_MSG("res", responseData));
         }

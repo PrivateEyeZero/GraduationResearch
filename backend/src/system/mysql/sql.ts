@@ -12,6 +12,7 @@ export class SQL {
     this.connection = mysql.createConnection({
       host: host,
       user: user,
+      port: 3306,
       password: password,
       database: database,
       bigNumberStrings: true,

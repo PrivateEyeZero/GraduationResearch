@@ -18,11 +18,10 @@ import {
   Flex,
   Divider,
 } from "@chakra-ui/react";
-import { group } from "console";
 
 const groupUrl = BACKEND_URL + "/group/get_groups";
 const getMembersUrl = BACKEND_URL + "/group/member/get";
-const addMembersUrl = BACKEND_URL + "/group/member/add";
+const editMembersUrl = BACKEND_URL + "/group/member/edit";
 
 interface Member {
   id: string;
@@ -91,11 +90,11 @@ const RoleFormWithMembers: React.FC = () => {
       if (data_gr.result === "success" && data_all.result === "success") {
         const group_members = data_gr.members || [];
         const group_members_uuids = group_members.map(
-          (member: Member) => member.uuid,
+          (member: Member) => member.uuid
         );
         const all_members = data_all.members || [];
         const non_members = all_members.filter(
-          (member: Member) => group_members_uuids.indexOf(member.uuid) == -1,
+          (member: Member) => group_members_uuids.indexOf(member.uuid) == -1
         );
         setMembers(data_gr.members || []);
         setNonMembers(non_members);
@@ -128,14 +127,14 @@ const RoleFormWithMembers: React.FC = () => {
   };
 
   const filteredNonMembers = nonMembers.filter((member) =>
-    member.id.toLowerCase().includes(searchTerm.toLowerCase()),
+    member.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddMember = async (uuid: string) => {
-    console.log("Add member with uuid:", uuid);
+  const handleEditMember = async (uuid: string, type: "add" | "remove") => {
+    console.log(`${type} member with uuid:`, uuid);
 
     try {
-      const response = await fetch(addMembersUrl, {
+      const response = await fetch(editMembersUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,6 +143,7 @@ const RoleFormWithMembers: React.FC = () => {
           session_id: session_id,
           group_id: selectedGroup,
           uuid: uuid,
+          type: type,
         }),
       });
       console.log(response);
@@ -151,7 +151,7 @@ const RoleFormWithMembers: React.FC = () => {
       if (memberToAdd) {
         setMembers((prevMembers) => [...prevMembers, memberToAdd]);
         setNonMembers((prevNonMembers) =>
-          prevNonMembers.filter((member) => member.uuid !== uuid),
+          prevNonMembers.filter((member) => member.uuid !== uuid)
         );
       }
     } catch (error) {
@@ -190,7 +190,19 @@ const RoleFormWithMembers: React.FC = () => {
             <FormLabel>メンバー一覧</FormLabel>
           </Box>
           {members.length > 0 ? (
-            members.map((member) => <Text key={member.uuid}>{member.id}</Text>)
+            members.map((member) => (
+              <>
+                <Text key={member.uuid}>{member.id}</Text>{" "}
+                <Button
+                  padding="0px"
+                  margin="0px"
+                  height="80%"
+                  onClick={() => handleEditMember(member.uuid, "remove")}
+                >
+                  削除
+                </Button>
+              </>
+            ))
           ) : (
             <Text>メンバーがいません</Text>
           )}
@@ -246,7 +258,7 @@ const RoleFormWithMembers: React.FC = () => {
                   padding="0px"
                   margin="0px"
                   height="80%"
-                  onClick={() => handleAddMember(member.uuid)}
+                  onClick={() => handleEditMember(member.uuid, "add")}
                 >
                   このユーザを追加
                 </Button>
