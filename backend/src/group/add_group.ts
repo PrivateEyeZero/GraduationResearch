@@ -19,27 +19,6 @@ export const add_group = async (req: Request, res: Response) => {
     return;
   }
 
-  const integrations = await sql_util.getIntegrations(
-    sql.getConnection(),
-    uuid,
-  );
-  if (integrations.result === "failed") {
-    res.send(integrations);
-    return;
-  }
-
-  const discod_id: string = integrations.discord.toString();
-  if (discod_id === null) {
-    res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.NO_DISCOD_MSG));
-    return;
-  }
-
-  const isManager = DiscordUtil.isRoleManager(discord.getGuild(), discod_id);
-  if (!isManager) {
-    res.send(BASIC_INFO.FAILED_MSG("message", BASIC_INFO.NO_PERMISSION_MSG));
-    return;
-  }
-
   const group_role = await DiscordUtil.createRole(
     discord.getGuild(),
     group_name,

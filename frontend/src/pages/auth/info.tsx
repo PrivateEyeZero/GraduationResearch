@@ -111,8 +111,8 @@ const AuthInfo: React.FC = () => {
       </Heading>
       {userInfo && (
         <List spacing={4}>
-          <ListItem>{getInfoItem("ユーザID", userInfo.userId)}</ListItem>
-          <ListItem>{getInfoItem("ユーザ名", userInfo.userName)}</ListItem>
+          <ListItem>{getInfoItem("固有ID", userInfo.userId)}</ListItem>
+          <ListItem>{getInfoItem("ユーザID", userInfo.userName)}</ListItem>
           <ListItem>
             {getInfoItem("Discord", userInfo.discordId, "/auth/discord")}
           </ListItem>

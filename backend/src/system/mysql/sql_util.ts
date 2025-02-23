@@ -23,7 +23,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `
         CREATE TABLE IF NOT EXISTS user (
-          uuid INT AUTO_INCREMENT PRIMARY KEY,
+          uuid INT AUTO_INCREMENT PRIMARY KEY UNIQUE,
           id VARCHAR(32) NOT NULL UNIQUE,
           pass VARCHAR(32) NOT NULL,
           admin BOOL NOT NULL DEFAULT FALSE,
@@ -173,7 +173,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `
         CREATE TABLE IF NOT EXISTS \`group\` (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY UNIQUE,
             name VARCHAR(32) NOT NULL UNIQUE
         );
       `;
@@ -391,7 +391,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `      
         CREATE TABLE IF NOT EXISTS group_service (
-          id INT AUTO_INCREMENT PRIMARY KEY,
+          id INT AUTO_INCREMENT PRIMARY KEY UNIQUE,
           group_id INT NOT NULL,
           service VARCHAR(32) NOT NULL,
           role TEXT,
@@ -479,7 +479,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `
         CREATE TABLE IF NOT EXISTS integration (
-          uuid INT PRIMARY KEY,
+          uuid INT PRIMARY KEY UNIQUE,
           discord VARCHAR(32),
           line VARCHAR(64),
           teams VARCHAR(32),
@@ -563,7 +563,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `
         CREATE TABLE IF NOT EXISTS message (
-          id INT AUTO_INCREMENT PRIMARY KEY,
+          id INT AUTO_INCREMENT PRIMARY KEY UNIQUE,
           content TEXT NOT NULL,
           sender INT,
           FOREIGN KEY (sender) REFERENCES user(uuid) ON DELETE SET NULL
@@ -638,7 +638,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `
         CREATE TABLE IF NOT EXISTS message_target (
-          id INT AUTO_INCREMENT PRIMARY KEY,
+          id INT AUTO_INCREMENT PRIMARY KEY UNIQUE,
           type ENUM('user', 'group') NOT NULL,
           receiver INT NOT NULL,
           FOREIGN KEY (id) REFERENCES message(id) ON DELETE CASCADE
@@ -722,7 +722,7 @@ export class sql_util {
     return new Promise((resolve, reject) => {
       const query = `      
         CREATE TABLE IF NOT EXISTS response (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id INT AUTO_INCREMENT PRIMARY KEY UNIQUE,
         user_id INT,
         message_id INT,
         safety BOOL NOT NULL,

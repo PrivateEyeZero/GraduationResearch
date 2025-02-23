@@ -191,7 +191,7 @@ const RoleFormWithMembers: React.FC = () => {
           </Box>
           {members.length > 0 ? (
             members.map((member) => (
-              <>
+              <Flex alignItems="center">
                 <Text key={member.uuid}>{member.id}</Text>{" "}
                 <Button
                   padding="0px"
@@ -201,7 +201,7 @@ const RoleFormWithMembers: React.FC = () => {
                 >
                   削除
                 </Button>
-              </>
+              </Flex>
             ))
           ) : (
             <Text>メンバーがいません</Text>

@@ -1,7 +1,7 @@
-﻿# A5:ER FORMAT:18
+﻿# A5:ER FORMAT:19
 # A5:ER ENCODING:UTF8
 # A5:ER Mk-1 Copyright © 2007 m.matsubara
-# A5:SQL Mk-2 Version 2.19.2 Copyright © 1997 - 2024 m.matsubara
+# A5:SQL Mk-2 Version 2.20.0 Copyright © 1997 - 2025 m.matsubara
 #  https://a5m2.mmatsubara.com
 
 [Manager]
@@ -48,7 +48,7 @@ Left=50
 Top=500
 Field="id","id","int auto_increment","NOT NULL",0,"","",$FFFFFFFF,""
 Field="name","name","varchar(32)","NOT NULL",,"","",$FFFFFFFF,""
-Index=name=2,name
+Index==2,name
 EffectMode=None
 Color=$000000
 BkColor=$FFFFFF
@@ -66,8 +66,8 @@ Left=800
 Top=450
 Field="user_id","user_id","int",,,"","",$FFFFFFFF,""
 Field="group_id","group_id","int",,,"","",$FFFFFFFF,""
-Index=user_id=0,user_id
-Index=group_id=0,group_id
+Index==0,user_id
+Index==0,group_id
 EffectMode=None
 Color=$000000
 BkColor=$FFFFFF
@@ -88,7 +88,7 @@ Field="group_id","group_id","int","NOT NULL",,"","",$FFFFFFFF,""
 Field="provider","provider","varchar(32)","NOT NULL",,"","",$FFFFFFFF,""
 Field="role","role","text",,,"","",$FFFFFFFF,""
 Field="channel","channel","text",,,"","",$FFFFFFFF,""
-Index=group_id=0,group_id
+Index==0,group_id
 EffectMode=None
 Color=$000000
 BkColor=$FFFFFF
@@ -106,7 +106,7 @@ Left=550
 Top=300
 Field="uuid","uuid","int","NOT NULL",0,"","",$FFFFFFFF,""
 Field="discord","discord","varchar(32)",,,"","",$FFFFFFFF,""
-Field="line","line","varchar(32)",,,"","",$FFFFFFFF,""
+Field="line","line","varchar(64)",,,"","",$FFFFFFFF,""
 Field="github","github","varchar(32)",,,"","",$FFFFFFFF,""
 Field="teams","teams","varchar(32)",,,"","",$FFFFFFFF,""
 EffectMode=None
@@ -127,10 +127,7 @@ Top=50
 Field="id","id","int auto_increment","NOT NULL",0,"","",$FFFFFFFF,""
 Field="content","content","text","NOT NULL",,"","",$FFFFFFFF,""
 Field="sender","sender","int",,,"","",$FFFFFFFF,""
-Field="status","status","enum(\quser\q,\qgroup\q)",,,"","",$FFFFFFFF,""
-Field="user_id","user_id","int",,,"","",$FFFFFFFF,""
-Field="group_id","group_id","int",,,"","",$FFFFFFFF,""
-Index=sender=0,sender
+Index==0,sender
 EffectMode=None
 Color=$000000
 BkColor=$FFFFFF
@@ -151,8 +148,8 @@ Field="user_id","user_id","int",,,"","",$FFFFFFFF,""
 Field="message_id","message_id","int",,,"","",$FFFFFFFF,""
 Field="safety","safety","tinyint(1)","NOT NULL",,"","",$FFFFFFFF,""
 Field="comment","comment","text",,,"","",$FFFFFFFF,""
-Index=unique_user_message=2,user_id,message_id
-Index=message_id=0,message_id
+Index==2,user_id,message_id
+Index==0,message_id
 EffectMode=None
 Color=$000000
 BkColor=$FFFFFF
@@ -168,14 +165,14 @@ Fields1=uuid
 Fields2=sender
 Cardinarity1=
 Cardinarity2=
-Position="MAIN",0,600,200,697,R,R,""
+Position="MAIN",0,600,200,1000,R,R,""
 Dependence=0
 Caption=
 PName=
 LineMode=0
 Bar1=60
 Bar2=20
-Bar3=70
+Bar3=100
 TermPos1=R
 TermPos2=R
 ZOrder=-12
@@ -257,7 +254,7 @@ Field="id","id","varchar(32)","NOT NULL",,"","",$FFFFFFFF,""
 Field="pass","pass","varchar(32)","NOT NULL",,"","",$FFFFFFFF,""
 Field="admin","admin","tinyint(1)","NOT NULL",,"0","",$FFFFFFFF,""
 Field="enable","enable","tinyint(1)","NOT NULL",,"1","",$FFFFFFFF,""
-Index=id=2,id
+Index==2,id
 EffectMode=None
 Color=$000000
 BkColor=$FFFFFF
@@ -327,3 +324,84 @@ Bar3=325
 TermPos1=R
 TermPos2=R
 ZOrder=-10
+
+[Entity]
+PName=message_target
+LName=message_target
+Comment=
+TableInnerOption=
+TableOption=
+Page=Main
+Left=50
+Top=50
+Field="id","id","int auto_increment","NOT NULL",0,"","",$FFFFFFFF,""
+Field="type","type","enum(\quser\q,\qgroup\q)","NOT NULL",,"","",$FFFFFFFF,""
+Field="receiver","receiver","int","NOT NULL",,"","",$FFFFFFFF,""
+EffectMode=None
+Color=$000000
+BkColor=$FFFFFF
+Position="Main",50,50
+ZOrder=0
+
+[Relation]
+Entity1=user
+Entity2=user
+RelationType1=1
+RelationType2=3
+Fields1=uuid
+Fields2=uuid
+Cardinarity1=
+Cardinarity2=
+Position="MAIN",0,7500,2500,9500,R,R,""
+Dependence=0
+Caption=
+PName=
+LineMode=0
+Bar1=750
+Bar2=250
+Bar3=950
+TermPos1=R
+TermPos2=R
+ZOrder=1
+
+[Relation]
+Entity1=group
+Entity2=group
+RelationType1=1
+RelationType2=3
+Fields1=id
+Fields2=id
+Cardinarity1=
+Cardinarity2=
+Position="MAIN",0,7500,2500,9500,R,R,""
+Dependence=0
+Caption=
+PName=
+LineMode=0
+Bar1=750
+Bar2=250
+Bar3=950
+TermPos1=R
+TermPos2=R
+ZOrder=2
+
+[Relation]
+Entity1=message
+Entity2=message
+RelationType1=1
+RelationType2=3
+Fields1=id
+Fields2=id
+Cardinarity1=
+Cardinarity2=
+Position="MAIN",0,7500,2500,9500,R,R,""
+Dependence=0
+Caption=
+PName=
+LineMode=0
+Bar1=750
+Bar2=250
+Bar3=950
+TermPos1=R
+TermPos2=R
+ZOrder=3
